@@ -1,0 +1,231 @@
+// =============================================================
+// Prisma Schema -- POS F&B MVP
+// Database: PostgreSQL (Neon.tech)
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// ENUM
+// -------------------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  MANAGER
+  CASHIER
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  QRIS
+  TRANSFER
+}
+
+enum PwaOrderStatus {
+  PENDING_CONFIRMATION
+  BEING_PREPARED
+  READY_FOR_PICKUP
+  CANCELLED
+}
+
+// -------------------------------------------------------------
+// USER (Kasir & Admin)
+// -------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  username  String   @unique
+  password  String
+  role      Role     @default(CASHIER)
+  createdAt DateTime @default(now())
+
+  orders Order[]
+
+  @@map("users")
+}
+
+// -------------------------------------------------------------
+// CATEGORY
+// -------------------------------------------------------------
+
+model Category {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  isDrink Boolean @default(false)
+
+  sortOrder Int       @default(0)
+
+  products Product[]
+
+  @@map("categories")
+}
+
+// -------------------------------------------------------------
+// PRODUCT
+// -------------------------------------------------------------
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  price       Int
+  sku         String?
+  image       String?
+  isAvailable Boolean @default(true)
+  categoryId  String
+
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+// -------------------------------------------------------------
+// ORDER (dibuat oleh Kasir via POS)
+// -------------------------------------------------------------
+
+model Order {
+  id            String        @id @default(cuid())
+  totalAmount   Int
+  paymentMethod PaymentMethod @default(CASH)
+  status        OrderStatus   @default(PENDING)
+  cashierId     String
+  createdAt     DateTime      @default(now())
+
+  cashier    User        @relation(fields: [cashierId], references: [id])
+  orderItems OrderItem[]
+
+  @@map("orders")
+}
+
+// -------------------------------------------------------------
+// ORDER ITEM
+// -------------------------------------------------------------
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String?
+  quantity  Int
+  subTotal  Int
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@map("order_items")
+}
+
+// -------------------------------------------------------------
+// CUSTOMER (Pelanggan PWA -- login via nomor HP)
+// -------------------------------------------------------------
+
+model Customer {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  name      String
+  points    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+
+  pwaOrders PwaOrder[]
+
+  @@map("customers")
+}
+
+// -------------------------------------------------------------
+// PWA ORDER (Pesanan dari pelanggan via scan QR)
+// -------------------------------------------------------------
+
+model PwaOrder {
+  id          String         @id @default(cuid())
+  tableId     String
+  customerId  String?
+  totalAmount Int
+  orderType   String         @default("DINE_IN")
+  status      PwaOrderStatus @default(PENDING_CONFIRMATION)
+  paymentMethod PaymentMethod?
+  items       Json
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@map("pwa_orders")
+}
+
+// -------------------------------------------------------------
+// REWARD PRODUCT (Menu Penukaran Poin Loyalty)
+// -------------------------------------------------------------
+
+model RewardProduct {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  pointCost   Int
+  qtyExchange Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("reward_products")
+}
+
+model StoreSetting {
+  id          String   @id @default("kofilo-store-1")
+  storeName   String   @default("Craft Coffee")
+  description String?  @db.Text
+  phone       String?
+  email       String?
+  instagram   String?
+  tiktok      String?
+  logo        String?  @db.Text 
+  banner      String?  @db.Text
+
+  // ── UNTUK OPERASIONAL ──
+  address        String?  @db.Text
+  mapsUrl        String?  @db.Text
+  operatingHours String?  
+  isStoreOpen    Boolean  @default(true) // Untuk fitur Buka/Tutup Toko Darurat
+
+  // ── UNTUK KEUANGAN & PEMBAYARAN ──
+  taxRate         Float    @default(0)    // Pajak (PPN) dalam persentase (cth: 11)
+  serviceCharge   Float    @default(0)    // Biaya layanan dalam persentase (cth: 5)
+  minOrderAmount  Int      @default(0)    // Minimal nominal belanja untuk bisa checkout
+  acceptCash      Boolean  @default(true) // Terima pembayaran tunai
+  acceptQris      Boolean  @default(true) // Terima QRIS/E-Wallet
+  acceptTransfer  Boolean  @default(false)// Terima Transfer Bank
+
+  // ── UNTUK ATURAN POIN (LOYALTY) ──
+  loyaltyEnabled     Boolean  @default(true)  // Fitur loyalty aktif/tidak
+  rewardPerAmount    Int      @default(10000) // Kelipatan belanja (Rp)
+  pointsEarned       Int      @default(1)     // Poin yang didapat dari kelipatan di atas
+  registrationPoints Int      @default(0)     // Bonus poin pendaftaran member baru
+  pointsExpiryDays   Int      @default(365)
+
+  // ── TAMBAHAN UNTUK STRUK KASIR ──
+  receiptFooter      String?  @db.Text        // Pesan di bawah struk
+  wifiName           String?
+  wifiPassword       String?                  // Info WiFi untuk pelanggan
+
+  // ── PWA SETTINGS ──
+  pwaBanners         Json?    @default("[]") // Menyimpan array banner promo
+  pwaEnableTakeaway  Boolean  @default(true) // Toggle izin Takeaway
+  openTime  String? @default("09:00")
+  closeTime String? @default("00:00")
+  storeMode String? @default("AUTO")
+
+  updatedAt   DateTime @updatedAt
+}
