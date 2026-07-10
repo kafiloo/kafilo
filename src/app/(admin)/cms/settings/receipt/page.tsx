@@ -201,6 +201,13 @@ export default function ReceiptSettingsPage() {
                   {formData.receiptFooter || "Terima kasih atas kunjungannya!"}
                 </div>
 
+                {/* 🔥 TAMBAHAN: POWERED BY KAFILOO 🔥 */}
+                <div className="mt-5 pt-3 border-t border-dashed border-gray-200 w-2/3 mx-auto text-center">
+                  <p className="text-[9px] text-gray-300 font-bold tracking-widest uppercase">
+                    Powered by Kafiloo
+                  </p>
+                </div>
+
               </div>
 
               <div className="absolute bottom-0 left-0 right-0 h-2 bg-repeat-x" style={{ backgroundImage: 'radial-gradient(circle at 5px 10px, transparent 5px, white 6px)', transform: 'rotate(180deg)' }}></div>

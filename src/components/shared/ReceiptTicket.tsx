@@ -120,6 +120,13 @@ export default function ReceiptTicket({ data }: { data: ReceiptData }) {
           <p className="text-gray-400 text-[10px] mt-2 leading-relaxed whitespace-pre-wrap">
             {data.footerMessage || "Thank you for your visit!"}
           </p>
+          
+          {/* 🔥 TAMBAHAN: POWERED BY KAFILOO 🔥 */}
+          <div className="mt-5 pt-3 border-t border-dashed border-gray-200 w-2/3 mx-auto">
+            <p className="text-[9px] text-gray-300 font-bold tracking-widest uppercase">
+              Powered by Kafiloo
+            </p>
+          </div>
         </div>
 
       </div>

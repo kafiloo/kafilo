@@ -22,7 +22,7 @@ async function main() {
   const hashedPassword = await bcrypt.hash("admin123", 10);
 
   const superadmin = await prisma.user.create({
-    data: { name: "Alex Morgan", username: "superadmin", password: hashedPassword, role: Role.SUPER_ADMIN },
+    data: { name: "Owner", username: "superadmin", password: hashedPassword, role: Role.SUPER_ADMIN },
   });
   const cashierA = await prisma.user.create({
     data: { name: "Budi Santoso", username: "budi", password: hashedPassword, role: Role.CASHIER },
