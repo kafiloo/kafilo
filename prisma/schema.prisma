@@ -90,6 +90,7 @@ model Product {
 
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
+  recipeItems RecipeItem[]
 
   @@map("products")
 }
@@ -165,6 +166,56 @@ model PwaOrder {
   customer Customer? @relation(fields: [customerId], references: [id])
 
   @@map("pwa_orders")
+}
+
+// -------------------------------------------------------------
+// INVENTORY (Stock Management)
+// -------------------------------------------------------------
+
+enum UnitOfMeasure {
+  GRAM
+  KILOGRAM
+  MILLILITER
+  LITER
+  PIECE
+  PACK
+  BOX
+  BOTTLE
+  CUP
+  BAG
+}
+
+model InventoryItem {
+  id              String          @id @default(cuid())
+  name            String
+  sku             String          @unique
+  category        String          @default("Umum")
+  unit            UnitOfMeasure   @default(PIECE)
+  currentStock    Int             @default(0)
+  minThreshold    Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  recipeItems     RecipeItem[]
+
+  @@map("inventory_items")
+}
+
+// -------------------------------------------------------------
+// RECIPE (Hubungan antara Menu Product dan Bahan Baku)
+// -------------------------------------------------------------
+
+model RecipeItem {
+  id              String          @id @default(cuid())
+  inventoryId     String
+  productId       String
+  quantityNeeded  Int             @default(1)
+
+  inventory       InventoryItem   @relation(fields: [inventoryId], references: [id], onDelete: Restrict)
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([inventoryId, productId])
+  @@map("recipe_items")
 }
 
 // -------------------------------------------------------------

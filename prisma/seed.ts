@@ -2,13 +2,15 @@
 // Prisma Seed — Seeding Categories, Products, Users, & Orders
 // =============================================================
 
-import { PrismaClient, Role, PaymentMethod, OrderStatus } from "@prisma/client";
+import { PrismaClient, Role, PaymentMethod, OrderStatus, UnitOfMeasure } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Cleaning database...");
+  await prisma.recipeItem.deleteMany({});
+  await prisma.inventoryItem.deleteMany({});
   await prisma.orderItem.deleteMany({});
   await prisma.order.deleteMany({});
   await prisma.product.deleteMany({});
@@ -84,6 +86,41 @@ async function main() {
     const created = await prisma.product.create({ data: p });
     products.push(created);
   }
+
+  console.log("🌱 Seeding Inventory Items...");
+  const inventoryItems = [
+    { name: "Susu UHT Full Cream", category: "Susu", unit: "MILLILITER", currentStock: 15000, minThreshold: 5000 },
+    { name: "Biji Kopi Arabika", category: "Kopi", unit: "GRAM", currentStock: 8000, minThreshold: 2000 },
+    { name: "Biji Kopi Robusta", category: "Kopi", unit: "GRAM", currentStock: 3000, minThreshold: 1000 },
+    { name: "Gula Pasir", category: "Bahan Kering", unit: "GRAM", currentStock: 20000, minThreshold: 5000 },
+    { name: "Sirup Karamel", category: "Sirup", unit: "MILLILITER", currentStock: 2000, minThreshold: 500 },
+    { name: "Matcha Bubuk", category: "Bubuk", unit: "GRAM", currentStock: 500, minThreshold: 200 },
+    { name: "Tepung Terigu", category: "Bahan Kering", unit: "GRAM", currentStock: 10000, minThreshold: 3000 },
+    { name: "Mentega", category: "Bahan Kering", unit: "GRAM", currentStock: 3000, minThreshold: 1000 },
+    { name: "Coklat Bubuk", category: "Bubuk", unit: "GRAM", currentStock: 1500, minThreshold: 500 },
+    { name: "Susu Almond", category: "Susu", unit: "MILLILITER", currentStock: 5000, minThreshold: 2000 },
+    { name: "Es Batu", category: "Bahan Dingin", unit: "BAG", currentStock: 10, minThreshold: 3 },
+    { name: "Cup 16oz", category: "Kemasan", unit: "PIECE", currentStock: 200, minThreshold: 50 },
+    { name: "Cup 22oz", category: "Kemasan", unit: "PIECE", currentStock: 50, minThreshold: 50 },
+    { name: "Tissue", category: "Perlengkapan", unit: "PACK", currentStock: 5, minThreshold: 2 },
+    { name: "Sedotan", category: "Perlengkapan", unit: "PIECE", currentStock: 500, minThreshold: 100 },
+  ];
+
+  for (let i = 0; i < inventoryItems.length; i++) {
+    const inv = inventoryItems[i];
+    await prisma.inventoryItem.create({
+      data: {
+        name: inv.name,
+        category: inv.category,
+        unit: inv.unit as UnitOfMeasure,
+        currentStock: inv.currentStock,
+        minThreshold: inv.minThreshold,
+        sku: `INV-${String(i + 1).padStart(4, "0")}`,
+      },
+    });
+  }
+
+  console.log(`✅ ${inventoryItems.length} inventory items seeded`);
 
   console.log("🌱 Seeding Mock Sales/Orders...");
   const totalOrdersToCreate = 150;

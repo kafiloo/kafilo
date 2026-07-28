@@ -135,6 +135,50 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // 🔥 KURANGI STOCK BAHAN BAKU BERDASARKAN RECIPE 🔥
+      // Ambil semua recipe items untuk produk yang dibeli (kecuali reward)
+      const paidProductIds = items
+        .filter((item: any) => !(item.isReward === true || (item.productId || "").includes('-reward') || item.price === 0))
+        .map((item: any) => (item.productId || "").replace('-reward', ''));
+
+      if (paidProductIds.length > 0) {
+        const recipeItems = await tx.recipeItem.findMany({
+          where: { productId: { in: [...new Set(paidProductIds)] } },
+          include: { inventory: { select: { id: true, currentStock: true } } },
+        });
+
+        // Kelompokkan quantity product per productId
+        const productQtyMap = new Map<string, number>();
+        items.forEach((item: any) => {
+          const realId = (item.productId || "").replace('-reward', '');
+          const isReward = item.isReward === true || (item.productId || "").includes('-reward') || item.price === 0;
+          if (!isReward) {
+            productQtyMap.set(realId, (productQtyMap.get(realId) || 0) + item.quantity);
+          }
+        });
+
+        // Hitung total pengurangan per inventory item
+        const stockDeduction = new Map<string, number>();
+        for (const recipe of recipeItems) {
+          const qtySold = productQtyMap.get(recipe.productId) || 0;
+          const totalNeeded = recipe.quantityNeeded * qtySold;
+          if (totalNeeded > 0) {
+            stockDeduction.set(
+              recipe.inventoryId,
+              (stockDeduction.get(recipe.inventoryId) || 0) + totalNeeded
+            );
+          }
+        }
+
+        // Eksekusi pengurangan stock
+        for (const [inventoryId, deductQty] of stockDeduction) {
+          await tx.inventoryItem.update({
+            where: { id: inventoryId },
+            data: { currentStock: { decrement: deductQty } },
+          });
+        }
+      }
+
       return await tx.order.create({
         data: {
           totalAmount: calculatedTotal,
