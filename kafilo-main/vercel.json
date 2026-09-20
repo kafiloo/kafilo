@@ -1,0 +1,11 @@
+{
+  "env": {
+    "JWT_SECRET": "kofilo-pwa-jwt-secret-2026-randomsalt-change-in-production",
+    "RAJAONGKIR_API_KEY": "NgQgiMwx8f4bb4c4b5b9353blaV3bscI",
+    "RAJAONGKIR_BASE_URL": "https://rajaongkir.komerce.id/api/v1",
+    "KOMERCE_PAYMENT_API_KEY": "RAba8JIb8f4bb4c4b5b9353bhw9PjPoz",
+    "KOMERCE_PAYMENT_BASE_URL": "https://api-sandbox.collaborator.komerce.id/user",
+    "QRISLY_API_KEY": "RAba8JIb8f4bb4c4b5b9353bhw9PjPoz",
+    "QRISLY_BASE_URL": "https://api-sandbox.collaborator.komerce.id/user"
+  }
+}
