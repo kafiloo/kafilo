@@ -21,6 +21,8 @@ const CASHIER_ROUTES = ["/cashier"];
  * Termasuk semua route PWA pelanggan dan API publik PWA.
  */
 const PUBLIC_ROUTES = [
+  "/",
+  "/landingpage",
   "/login",
   "/api/auth",
   // API PWA publik
