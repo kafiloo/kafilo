@@ -164,7 +164,7 @@ export default function KofiloLandingPage() {
               Login Owner
             </Link>
              <Link href="/cms/dashboard" className="bg-[#1a1f36] hover:bg-[#6C4E31] text-white px-6 py-2.5 rounded-full text-[14px] font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                Mulai Gratis
+                Mulai Berlangganan
              </Link>
           </div>
         </nav>
@@ -203,7 +203,7 @@ export default function KofiloLandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
             <Link href="/cms/dashboard" className="relative w-full sm:w-auto overflow-hidden bg-gradient-to-r from-[#6C4E31] to-[#583f27] text-white px-10 py-5 rounded-full text-[16px] font-black shadow-[0_15px_30px_-10px_rgba(108,78,49,0.6)] hover:shadow-[0_20px_40px_-10px_rgba(108,78,49,0.8)] hover:-translate-y-1 transition-all duration-500 flex items-center justify-center gap-3 group">
               <span className="relative z-10 flex items-center gap-2">
-                Mulai Gratis Sekarang
+                Pilih Paket Sekarang
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5 group-hover:translate-x-1 transition-transform"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
               </span>
               <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]"></div>
@@ -484,7 +484,7 @@ export default function KofiloLandingPage() {
         <Reveal>
           <div className="text-center mb-24 max-w-3xl mx-auto">
             <h2 className="text-[36px] md:text-[52px] font-black tracking-tight mb-6 text-[#1a1f36]">Investasi Terbaik Kafe Anda.</h2>
-            <p className="text-gray-500 font-medium text-[18px] leading-relaxed">Sistem Enterprise tanpa harga Enterprise. Mulai gunakan paket gratis untuk tes pasar, tingkatkan ke Pro saat Anda siap meroket.</p>
+            <p className="text-gray-500 font-medium text-[18px] leading-relaxed">Sistem Enterprise tanpa harga Enterprise. Mulai gunakan paket biasa, tingkatkan ke Pro saat Anda siap meroket.</p>
           </div>
         </Reveal>
 
@@ -494,20 +494,22 @@ export default function KofiloLandingPage() {
           <Reveal delay={100} direction="right" className="h-full w-full">
             <div className="bg-white border border-gray-200 rounded-[48px] p-12 shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-6 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)] transition-all duration-500 h-full flex flex-col group cursor-pointer w-full">
               <h3 className="text-[28px] font-black text-[#1a1f36] mb-3">Starter</h3>
-              <p className="text-gray-500 text-[16px] font-medium mb-10">Sempurna untuk kafe yang baru merintis bisnis.</p>
-              <div className="mb-12">
-                <span className="text-[64px] font-black text-[#1a1f36] tracking-tighter">Gratis</span>
+              <p className="text-gray-500 text-[16px] font-medium mb-10">Sempurna untuk kafe yang membutuhkan sistem kasir handal.</p>
+              <div className="mb-12 flex items-start">
+                <span className="text-gray-400 font-bold text-3xl mt-2 mr-2">Rp</span>
+                <span className="text-[64px] font-black text-[#1a1f36] tracking-tighter">350<span className="text-[36px] text-gray-400 tracking-normal">.000</span></span>
+                <span className="text-gray-400 font-medium self-end mb-4 ml-2">/ bulan</span>
               </div>
               <ul className="space-y-6 mb-12 text-[16px] font-medium text-gray-600 flex-1">
-                {['1 Akses Kasir Utama (Admin)', 'Manajemen Menu & Stok Dasar', 'Struk Thermal Standar'].map((item, i) => (
+                {['Akses POS (Kasir Utama)', 'Manajemen Menu & Stok Dasar', 'Struk Thermal Standar'].map((item, i) => (
                   <li key={i} className="flex items-center gap-4"><svg className="w-7 h-7 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> {item}</li>
                 ))}
-                {['Tanpa Fitur PWA (QR Order)', 'Tanpa Loyalty Hub Otomatis'].map((item, i) => (
+                {['Tanpa Fitur PWA (QR Order)', 'Tanpa Halaman Superadmin'].map((item, i) => (
                   <li key={i} className="flex items-center gap-4 text-gray-400 opacity-60"><svg className="w-7 h-7 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg> {item}</li>
                 ))}
               </ul>
-              <Link href="/cms/dashboard" className="block w-full py-5 text-center rounded-full bg-gray-50 text-[#1a1f36] font-extrabold text-[18px] border border-gray-200 group-hover:bg-[#1a1f36] group-hover:text-white transition-all duration-300">
-                Mulai Gratis
+              <Link href="/landingpage/checkout?plan=starter" className="block w-full py-5 text-center rounded-full bg-gray-50 text-[#1a1f36] font-extrabold text-[18px] border border-gray-200 group-hover:bg-[#1a1f36] group-hover:text-white transition-all duration-300">
+                Pilih Starter
               </Link>
             </div>
           </Reveal>
@@ -523,16 +525,16 @@ export default function KofiloLandingPage() {
                 <p className="text-gray-400 text-[16px] font-medium mb-10 relative z-10">Otomatisasi penuh untuk kafe yang sangat ramai.</p>
                 <div className="mb-12 relative z-10 flex items-start">
                   <span className="text-gray-400 font-bold text-3xl mt-2 mr-2">Rp</span>
-                  <span className="text-[64px] font-black text-white tracking-tighter">149<span className="text-[36px] text-gray-400 tracking-normal">.000</span></span>
+                  <span className="text-[64px] font-black text-white tracking-tighter">500<span className="text-[36px] text-gray-400 tracking-normal">.000</span></span>
                   <span className="text-gray-400 font-medium self-end mb-4 ml-2">/ bulan</span>
                 </div>
                 <ul className="space-y-6 mb-12 text-[16px] font-medium text-gray-300 flex-1 relative z-10">
-                  {['Semua kehebatan Starter', 'PWA QR Ordering (Self-Order)', 'Loyalty Hub & Poin Otomatis', 'Akses Multi-User (Super Admin)', 'Kustomisasi Struk Lengkap', 'Prioritas Support 24/7'].map((item, i) => (
+                  {['Semua kehebatan Starter', 'Akses Halaman Superadmin', 'PWA QR Ordering (Self-Order)', 'Loyalty Hub & Poin Otomatis', 'Kustomisasi Struk Lengkap', 'Prioritas Support 24/7'].map((item, i) => (
                     <li key={i} className="flex items-center gap-4 text-white"><svg className="w-7 h-7 text-[#d4a373] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> <strong>{item}</strong></li>
                   ))}
                 </ul>
-                <Link href="/cms/dashboard" className="block w-full py-5 text-center rounded-full bg-gradient-to-r from-[#6C4E31] to-[#583f27] text-white font-black text-[18px] shadow-[0_10px_20px_rgba(108,78,49,0.4)] group-hover:shadow-[0_15px_30px_rgba(108,78,49,0.6)] group-hover:scale-[1.03] transition-all duration-300 relative z-10">
-                  Coba Gratis 14 Hari
+                <Link href="/landingpage/checkout?plan=pro" className="block w-full py-5 text-center rounded-full bg-gradient-to-r from-[#6C4E31] to-[#583f27] text-white font-black text-[18px] shadow-[0_10px_20px_rgba(108,78,49,0.4)] group-hover:shadow-[0_15px_30px_rgba(108,78,49,0.6)] group-hover:scale-[1.03] transition-all duration-300 relative z-10">
+                  Pilih Pro
                 </Link>
               </div>
             </div>
