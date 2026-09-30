@@ -116,28 +116,35 @@ JWT_SECRET masih menggunakan placeholder/development value. Jika .env tercatat d
 3. Pastikan .env **TIDAK** tercatat di git (cek .gitignore)
 4. Rotasi key secara berkala
 
-### H-04: API Key Terlihat di .env (Potensi Exposure Git)
+### H-04: API Key Terlihat di .env (Potensi Exposure Git) — ✔ RESOLVED (30 Sep 2026)
 
-**Lokasi:** `.env` (lines 7-16)
+**Status:** Integrasi RajaOngkir (shipping), Komerce Payment, dan QRISLY sudah
+dihapus total dan digantikan Pakasir API v2. `vercel.json` tidak lagi memuat
+blok `env` berisi secret; validasi env terpusat di `src/lib/env.ts`
+(hanya `DATABASE_URL`, `JWT_SECRET`, `PAKASIR_SLUG`, `PAKASIR_API_KEY`,
+`PAKASIR_WEBHOOK_SECRET`, opsional `PAKASIR_BASE_URL`).
+
+**Lokasi (arsip audit, sudah tidak ada di repo):** `.env` (lines 7-16, sebelum cleanup)
 
 ```
-RAJAONGKIR_API_KEY="NgQgiMwx8f4bb4c4b5b9353blaV3bscI"
-KOMERCE_PAYMENT_API_KEY="RAba8JIb8f4bb4c4b5b9353bhw9PjPoz"
-QRISLY_API_KEY="RAba8JIb8f4bb4c4b5b9353bhw9PjPoz"
+RAJAONGKIR_API_KEY="<redacted>"
+KOMERCE_PAYMENT_API_KEY="<redacted>"
+QRISLY_API_KEY="<redacted>"
 ```
 
-**Deskripsi:**
-API Key untuk RajaOngkir, Komerce Payment, dan QRISLY hardcoded di file `.env`. Jika file ini tercatat di git history, key akan terekspos publik.
+**Deskripsi:** API key layanan lama hardcoded di `.env`. Meski variabelnya sudah
+dihapus dari kode, nilai lamanya masih ada di git history.
 
 **Dampak:**
-- Orang lain bisa menggunakan API key untuk mengakses layanan berbayar
-- Penyalahgunaan endpoint shipping/payment
+- Orang lain bisa menggunakan API key lama untuk mengakses layanan berbayar
 - Biaya tambahan di pihak pemilik API key
 
 **Rekomendasi:**
-1. Gunakan environment variable di Vercel dashboard (production)
-2. Rotasi semua API key yang sudah terekspos
-3. Verifikasi .gitignore sudah include `.env`
+1. Rotasi/nonaktifkan semua API key lama (RajaOngkir, Komerce, QRISLY) di
+   dashboard masing-masing — nilai lama tidak boleh dipakai lagi.
+2. Gunakan environment variable di Vercel dashboard (production/development),
+   bukan `vercel.json`.
+3. Verifikasi `.gitignore` sudah include `.env` / `.env.local`.
 
 ---
 

@@ -2,20 +2,17 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   getPlan,
   saveOrder,
-  generateOrderId,
   formatRpFull,
   type KofiloOrder,
 } from "@/lib/plans";
-
-type Method = "QRIS" | "BANK" | "CARD";
-
-const BANK_ACCOUNT = "1234 5678 9012 3456";
-const BANK_NAME = "Kafiloo Merchant Sdn Bhd";
+import { useCheckoutStore, type CheckoutMethod } from "@/stores/checkout-store";
+import PakasirMethodPicker from "@/components/customer/PakasirMethodPicker";
+import PakasirPaymentView from "@/components/customer/PakasirPaymentView";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -23,56 +20,61 @@ function CheckoutContent() {
   const plan = getPlan(planId) ?? getPlan("starter")!;
 
   const router = useRouter();
-
-  const [method, setMethod] = useState<Method | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState("");
-  const [fakeQrString, setFakeQrString] = useState("");
-  const [card, setCard] = useState({ number: "", expiry: "", cvv: "", name: "" });
+  const {
+    method,
+    setMethod,
+    fees,
+    feesLoading,
+    loadFees,
+    createPayment,
+    status,
+    payment,
+    error: payError,
+    reset,
+  } = useCheckoutStore();
 
   useEffect(() => {
-    if (method === "QRIS") {
-      const data = `0002010102110216KOFILO${plan.id.toUpperCase()}520459995303360540${String(
-        plan.price
-      ).padStart(6, "0")}5802ID5911KOFILO F&B6007Jakarta6304A1B2`;
-      setFakeQrString(data);
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan.id]);
+
+  useEffect(() => {
+    if (plan.price > 0) void loadFees(plan.price);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan.price]);
+
+  // Saat pembayaran Pakasir COMPLETED: simpan order langganan & ke halaman berhasil.
+  useEffect(() => {
+    if (status === "completed" && payment) {
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const order: KofiloOrder = {
+        orderId: payment.orderId,
+        planId: plan.id,
+        planName: plan.name,
+        amount: plan.price,
+        method: payment.method,
+        methodLabel: payment.method,
+        date: `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`,
+        time: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+        customerName: "Owner Kafe",
+        status: "PAID",
+      };
+      saveOrder(order);
+      reset();
+      router.push("/landingpage/berhasil");
     }
-  }, [method, plan.id, plan.price]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   const handleConfirm = async () => {
-    if (!method) {
-      setError("Silakan pilih metode pembayaran pertama.");
-      return;
-    }
-    setError("");
-    setIsProcessing(true);
-
-    // Simulasi proses pembayaran
-    await new Promise((r) => setTimeout(r, 1400));
-
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const order: KofiloOrder = {
-      orderId: generateOrderId(),
+    if (!method || !plan) return;
+    await createPayment({
+      method: method as CheckoutMethod,
       planId: plan.id,
-      planName: plan.name,
-      amount: plan.price,
-      method,
-      methodLabel:
-        method === "QRIS"
-          ? "QRIS / E-Wallet"
-          : method === "BANK"
-          ? "Transfer Bank"
-          : "Credit / Debit Card",
-      date: `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`,
-      time: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-      customerName: card.name || "Owner Kafe",
-      status: "PAID",
-    };
-
-    saveOrder(order);
-    setIsProcessing(false);
-    router.push("/landingpage/berhasil");
+      redirectUrl:
+        typeof window !== "undefined" ? `${window.location.origin}/landingpage/berhasil` : undefined,
+    });
   };
 
   return (
@@ -109,71 +111,26 @@ function CheckoutContent() {
               </div>
             </div>
 
-            {/* Metode Pembayaran */}
+            {/* Metode Pembayaran Pakasir */}
             <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
               <h2 className="font-black text-xl mb-1">Metode Pembayaran</h2>
               <p className="text-gray-500 font-medium text-sm mb-6">Silakan pilih cara pembayaran yang paling mudah untuk Anda.</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {([
-                  { id: "QRIS", title: "QRIS / E-Wallet", desc: "Kofilo Pay, GCash & lainnya", icon: "💳" },
-                  { id: "BANK", title: "Transfer Bank", desc: "Bank lokal Indonesia", icon: "🏦" },
-                  { id: "CARD", title: "Credit / Debit Card", desc: "Visa, Mastercard", icon: "💳" },
-                ] as { id: Method; title: string; desc: string; icon: string }[]).map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => { setMethod(m.id); }}
-                    className={`text-left rounded-2xl border-2 p-5 flex flex-col gap-1 transition-all ${
-                      method === m.id
-                        ? "border-[#6C4E31] bg-[#6C4E31]/5 shadow-md"
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${method === m.id ? "bg-[#6C4E31] text-white" : "bg-gray-50"}`}>{m.icon}</div>
-                    <span className="font-bold text-[15px] text-[#1a1f36]">{m.title}</span>
-                    <span className="text-[12px] text-gray-500">{m.desc}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Detail metode */}
-              {method === "QRIS" && (
-                <div className="mt-6 bg-white rounded-2xl border-2 border-dashed border-gray-200 p-5 text-center">
-                  <p className="font-extrabold text-lg tracking-wide">Scan QRIS untuk Bayar</p>
-                  <p className="text-sm text-gray-500 mb-3">Total: <strong>{formatRpFull(plan.price)}</strong></p>
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(fakeQrString || "KOFILO")}`}
-                    alt="QRIS Fake"
-                    className="w-40 h-40 mx-auto"
-                    crossOrigin="anonymous"
+              {!payment ? (
+                <>
+                  <PakasirMethodPicker
+                    amount={plan.price}
+                    method={method}
+                    fees={fees}
+                    feesLoading={feesLoading}
+                    onSelect={(m) => setMethod(m)}
                   />
-                  <p className="text-[11px] text-gray-400 mt-3">* QRIS Demo / palsu — hanya untuk contoh & tampilan.</p>
-                </div>
-              )}
-{method === "BANK" && (
-                <div className="mt-6 bg-[#1a1f36] text-white rounded-2xl p-5 flex justify-between items-center gap-4">
-                  <div>
-                    <p className="text-[#d4a373] font-extrabold text-xs uppercase tracking-wide mb-2">Transfer Bank (Simulasi)</p>
-                    <p className="font-mono text-xl tracking-wide">{BANK_ACCOUNT}</p>
-                    <p className="text-sm text-gray-300 mt-1">{BANK_NAME} · Bank Indonesia</p>
-                  </div>
-                  <button
-                    onClick={() => navigator.clipboard?.writeText(BANK_ACCOUNT)}
-                    className="bg-[#6C4E31] hover:bg-[#583f27] text-white px-4 py-2 rounded-full text-xs font-bold transition-all"
-                  >Kopi</button>
-                </div>
-              )}
-
-              {method === "CARD" && (
-                <div className="mt-6 bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-3">
-                  <p className="font-extrabold text-sm text-gray-500">Detail Kartu (Simulasi — tidak diproses real)</p>
-                  <input value={card.name} onChange={(e) => setCard({ ...card, name: e.target.value })} placeholder="Nama di Kartu" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm" />
-                  <input value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} placeholder="Nomor Kartu · 1234 5678 9012 3456" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input value={card.expiry} onChange={(e) => setCard({ ...card, expiry: e.target.value })} placeholder="MM/YY" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm" />
-                    <input value={card.cvv} onChange={(e) => setCard({ ...card, cvv: e.target.value })} placeholder="CVV" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm" />
-                  </div>
-                </div>
+                  {payError && (
+                    <div className="mt-4 bg-red-50 text-red-600 text-sm font-medium rounded-xl p-3 border border-red-100">{payError}</div>
+                  )}
+                </>
+              ) : (
+                <PakasirPaymentView />
               )}
             </div>
           </div>
@@ -213,27 +170,29 @@ function CheckoutContent() {
               <span>{formatRpFull(plan.price)}</span>
             </div>
 
-            {error && (
-              <div className="mt-4 bg-red-50 text-red-600 text-sm font-medium rounded-xl p-3 border border-red-100 relative z-10">{error}</div>
+            {payError && !payment && (
+              <div className="mt-4 bg-red-50 text-red-600 text-sm font-medium rounded-xl p-3 border border-red-100 relative z-10">{payError}</div>
             )}
 
+            {!payment && (
             <button
               onClick={handleConfirm}
-              disabled={!method || isProcessing}
+              disabled={!method || status === "creating"}
               className={`mt-6 block w-full py-4 text-center rounded-full relative z-10 transition-all ${
-                isProcessing
+                status === "creating"
                   ? "bg-gray-500 text-white cursor-wait"
                   : method
                     ? "bg-gradient-to-r from-[#6C4E31] to-[#583f27] text-white font-black shadow-[0_10px_20px_rgba(108,78,49,0.4)] hover:scale-[1.02]"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
               }`}
             >
-              {isProcessing ? "Memproses Pembayaran..." : `Konfirmasi & Bayar ${formatRpFull(plan.price)}`}
+              {status === "creating" ? "Memproses Pembayaran..." : `Konfirmasi & Bayar ${formatRpFull(plan.price)}`}
             </button>
+            )}
 
             <p className="text-[11px] text-gray-400 mt-3 relative z-10 flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2a3 3 0 013 3v1h2a1 1 0 011 1v11a1 1 0 01-1 1H7a1 1 0 01-1-1V7a1 1 0 011-1h2V5a3 3 0 013-3zm0 2a1 1 0 00-1 1v1h2V5a1 1 0 00-1-1z" /></svg>
-              Secure SSL-Encrypted · Demo pembayaran tanpa proses real
+              Secure SSL-Encrypted · Pembayaran via Pakasir
             </p>
           </aside>
         </div>

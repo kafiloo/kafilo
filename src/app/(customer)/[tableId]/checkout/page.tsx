@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/useCartStore';
 import { usePwaAuthStore } from '@/store/usePwaAuthStore';
 import AuthDrawer from '@/components/customer/AuthDrawer';
+import PakasirCheckoutPanel from '@/components/customer/PakasirCheckoutPanel';
+import { useCheckoutStore } from '@/stores/checkout-store';
 
 export default function CustomerCheckoutPage({ params }: { params: Promise<{ tableId: string }> }) {
   const { tableId } = use(params);
@@ -13,14 +15,12 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
   const { cart, clearCart } = useCartStore();
   const { customer, setCustomer } = usePwaAuthStore();
 
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [showAuthDrawer, setShowAuthDrawer] = useState(false);
-  
-  const [qrString, setQrString] = useState<string | null>(null);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [pollingQris, setPollingQris] = useState(false);
+  const [pwaOrderId, setPwaOrderId] = useState<string | null>(null);
+  const [orderCreating, setOrderCreating] = useState(false);
 
   // 🔥 State Keuangan & Settings 🔥
   const [storeSettings, setStoreSettings] = useState({ 
@@ -38,7 +38,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
         });
         // Default select first available method
         if (data.settings.acceptCash !== false) setPaymentMethod('CASH');
-        else if (data.settings.acceptQris !== false) setPaymentMethod('QRIS');
+        else if (data.settings.acceptQris !== false) setPaymentMethod('PAKASIR');
       }
     }).catch(() => {});
   }, []);
@@ -62,150 +62,72 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
     } catch { }
   };
 
-  // 🔥 HITUNGAN KEUNGAN DINAMIS 🔥
+  // Bersihkan state Pakasir saat meja berubah agar tidak reuse order lain.
+  // (key pada PakasirCheckoutPanel juga me-reset state saat pwaOrderId berubah.)
+  useEffect(() => {
+    useCheckoutStore.getState().reset();
+  }, [tableId]);
+
+  // 🔥 HITUNGAN KEUNGAN DINAMIS (estimasi client; total resmi dari server) 🔥
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const taxAmount = Math.round(subtotal * (storeSettings.taxRate / 100));
   const serviceAmount = Math.round(subtotal * (storeSettings.serviceCharge / 100));
   const total = subtotal + taxAmount + serviceAmount;
 
-  useEffect(() => {
-    let cancelled = false;
-    const createQrisPayment = async () => {
-      if (!customer?.token || paymentMethod !== 'QRIS') return;
-      setIsProcessing(true);
-      setError('');
-      try {
-        const customerInfo = {
-          name: customer.name || 'Customer',
-          email: `${customer.phone}@guest.local`,
-          phone: customer.phone,
-        };
-
-        const items = cart.map((item) => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-        }));
-
-        const res = await fetch('/api/v1/pwa/payment/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${customer.token}`,
-          },
-          body: JSON.stringify({
-            order_id: `PWA-${Date.now()}`,
-            payment_type: 'qris',
-            amount: total, // 🔥 Pass dynamic total
-            customer: customerInfo,
-            items,
-          }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setError(data.message || 'Gagal membuat pembayaran QRIS');
-          setIsProcessing(false);
-          return;
-        }
-
-        if (data.data?.qr_string) {
-          setQrString(data.data.qr_string);
-          setPaymentId(data.data.payment_id || null);
-          setPollingQris(true);
-        } else if (data.data?.token) {
-          const payUrl = `https://pay-sandbox.komerce.id/${data.data.token}`;
-          setQrString(payUrl);
-          setPaymentId(data.data.payment_id || null);
-          setPollingQris(true);
-        }
-      } catch {
-        setError('Koneksi gagal saat membuat pembayaran QRIS');
-      } finally {
-        if (!cancelled) setIsProcessing(false);
-      }
-    };
-
-    createQrisPayment();
-    return () => { cancelled = true; };
-  }, [paymentMethod, customer?.token, total]); // Added total to deps
-
-  useEffect(() => {
-    if (!pollingQris || !paymentId) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/v1/payment/status/${paymentId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const status = data.data?.payment_status;
-        
-        if (status === 'paid') {
-          clearInterval(interval);
-          setPollingQris(false);
-          handleQrisPaid();
-        } else if (status === 'expired' || status === 'cancelled') {
-          clearInterval(interval);
-          setPollingQris(false);
-          setError('Pembayaran QRIS expired/dibatalkan. Silakan coba lagi.');
-          setQrString(null);
-          setPaymentId(null);
-        }
-      } catch { }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [pollingQris, paymentId]);
-
-  const handleQrisPaid = async () => {
-    if (!customer?.token) return;
-    setIsProcessing(true);
+  // Buat PwaOrder di server (nominal resmi dihitung server dari database).
+  const ensurePwaOrder = async (): Promise<string | null> => {
+    if (pwaOrderId) return pwaOrderId;
+    if (!customer?.token) {
+      setShowAuthDrawer(true);
+      return null;
+    }
+    setOrderCreating(true);
     setError('');
-    setQrString(null);
-
     try {
-      const items = cart.map((item) => ({
-        productId: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        variants: item.variants ?? null,
-        isReward: item.isReward,
-      }));
-
       const res = await fetch('/api/v1/pwa/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${customer.token}`,
         },
-        body: JSON.stringify({ tableId, items, paymentMethod: 'QRIS', totalAmount: total }), // Pass totalAmount
+        body: JSON.stringify({ tableId, items: cart }),
       });
-
-      const data = await res.json();
-
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (res.status === 401) {
-          setShowAuthDrawer(true);
-          setIsProcessing(false);
-          return;
-        }
-        setError(data.message || 'Gagal mengirim pesanan');
-        setIsProcessing(false);
-        return;
+        setError(data.message || 'Gagal membuat pesanan. Silakan coba lagi.');
+        return null;
       }
-
-      clearCart();
-      await refreshCustomerPoints();
-      router.push(`/${tableId}/order-status?orderId=${data.orderId}`);
+      setPwaOrderId(data.orderId as string);
+      return data.orderId as string;
     } catch {
       setError('Koneksi gagal. Silakan coba lagi.');
-      setIsProcessing(false);
+      return null;
+    } finally {
+      setOrderCreating(false);
     }
   };
 
+  // Saat pembayaran Pakasir lunas -> PwaOrder sudah BEING_PREPARED via
+  // webhook/sync (pakasir-fulfillment). Tinggal bersihkan cart & redirect.
+  const handlePaid = async () => {
+    await refreshCustomerPoints();
+    clearCart();
+    router.push(`/${tableId}/order-status?orderId=${pwaOrderId}`);
+  };
+
+  // (Integrasi pembayaran lama sudah dibersihkan — file ini murni Pakasir.)
+
   const handleConfirmPayment = async () => {
-    if (!paymentMethod || !customer?.token) return;
-    
+    if (!customer) {
+      setShowAuthDrawer(true);
+      return;
+    }
+    if (paymentMethod === 'PAKASIR') {
+      // Alur online: buat PwaOrder dulu, lalu panel Pakasir membuat pembayaran.
+      await ensurePwaOrder();
+      return;
+    }
+
     if (paymentMethod === 'CASH') {
       setIsProcessing(true);
       setError('');
@@ -226,7 +148,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
             'Content-Type': 'application/json',
             Authorization: `Bearer ${customer.token}`,
           },
-          body: JSON.stringify({ tableId, items, paymentMethod: 'CASH', totalAmount: total }), // Pass totalAmount
+          body: JSON.stringify({ tableId, items, paymentMethod: 'CASH' }),
         });
 
         const data = await res.json();
@@ -255,9 +177,9 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
   const today = new Date();
   const formattedDate = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' });
   const formattedTime = today.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-  const txNumber = `TX${Math.floor(Math.random() * 100000000)}`;
+  const txNumber = `TX-${tableId}-${cart.length}`;
 
-  if (cart.length === 0 && !isProcessing && !qrString) {
+  if (cart.length === 0 && !isProcessing) {
     return null;
   }
 
@@ -281,25 +203,11 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
           </div>
         )}
 
-        {qrString && (
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-            <h2 className="font-extrabold text-lg tracking-wide mb-2">Scan QRIS untuk Bayar</h2>
-            <p className="text-xs text-gray-500 mb-4">Total: <strong>Rp {total.toLocaleString('id-ID')}</strong></p>
-            <div className="bg-white p-4 rounded-xl border-2 border-dashed border-gray-200 inline-block">
-              <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrString)}`}
-                alt="QRIS Code"
-                className="w-48 h-48"
-                crossOrigin="anonymous"
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 mt-3 animate-pulse">
-              {pollingQris ? 'Menunggu pembayaran... (otomatis update)' : 'Menyiapkan pembayaran...'}
-            </p>
-          </div>
+        {paymentMethod === 'PAKASIR' && pwaOrderId && (
+          <PakasirCheckoutPanel amount={total} pwaOrderId={pwaOrderId} onPaid={handlePaid} />
         )}
 
-        {!qrString && (
+        {paymentMethod !== 'PAKASIR' && (
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
             <div className="text-center mb-6">
               <h2 className="font-extrabold text-lg tracking-wide">CRAFT COFFEE</h2>
@@ -359,7 +267,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
           </div>
         )}
 
-        {!qrString && (
+        {paymentMethod !== 'PAKASIR' && (
           <div>
             <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-3">Select Payment Method</h3>
             
@@ -375,7 +283,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
                 {/* 🔥 SEMBUNYIKAN JIKA DI-DISABLE DI ADMIN 🔥 */}
                 {storeSettings.acceptCash && (
                   <button 
-                    onClick={() => { setPaymentMethod('CASH'); setQrString(null); setPaymentId(null); }}
+                    onClick={() => { setPaymentMethod('CASH'); useCheckoutStore.getState().reset(); setPwaOrderId(null); }}
                     className={`py-5 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
                       paymentMethod === 'CASH' 
                       ? 'border-[#7a5c43] bg-[#7a5c43]/5 text-[#7a5c43]' 
@@ -391,9 +299,9 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
 
                 {storeSettings.acceptQris && (
                   <button 
-                    onClick={() => { setPaymentMethod('QRIS'); setQrString(null); setPaymentId(null); }}
+                    onClick={() => { setPaymentMethod('PAKASIR'); }}
                     className={`py-5 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                      paymentMethod === 'QRIS' 
+                      paymentMethod === 'PAKASIR' 
                       ? 'border-[#7a5c43] bg-[#7a5c43]/5 text-[#7a5c43]' 
                       : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
                     }`}
@@ -402,7 +310,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
                     </svg>
-                    <span className="font-bold text-sm">QRIS / E-Wallet</span>
+                    <span className="font-bold text-sm">Online (QRIS / VA)</span>
                   </button>
                 )}
               </div>
@@ -422,31 +330,30 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
         }}
       />
 
-      <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 z-20">
-        <div className="max-w-md mx-auto">
-          {qrString ? (
-            <button
-              onClick={() => { setQrString(null); setPaymentId(null); setPollingQris(false); }}
-              className="w-full py-4 rounded-xl font-bold text-[15px] bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
-            >
-              Batalkan QRIS
-            </button>
-          ) : (
+      {/* CTA bawah disembunyikan saat panel Pakasir aktif (panel punya
+          tombol "Bayar Sekarang" sendiri + tampilan QR/VA). */}
+      {!(paymentMethod === 'PAKASIR' && pwaOrderId) && (
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 z-20">
+          <div className="max-w-md mx-auto">
             <button 
               onClick={handleConfirmPayment}
-              disabled={!paymentMethod || isProcessing || (!storeSettings.acceptCash && !storeSettings.acceptQris)}
+              disabled={!paymentMethod || isProcessing || orderCreating || (!storeSettings.acceptCash && !storeSettings.acceptQris)}
               className={`w-full py-4 rounded-xl font-bold text-[15px] transition-all flex justify-center items-center gap-2 ${
-                isProcessing || (!storeSettings.acceptCash && !storeSettings.acceptQris) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' :
+                isProcessing || orderCreating || (!storeSettings.acceptCash && !storeSettings.acceptQris) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' :
                 paymentMethod 
                   ? 'bg-[#7a5c43] text-white shadow-md hover:bg-[#634832] active:scale-95' 
                   : 'bg-[#e8e2d9] text-white cursor-not-allowed'
               }`}
             >
-              {isProcessing ? 'Memproses...' : `Confirm Payment - Rp ${total.toLocaleString('id-ID')}`}
+              {isProcessing || orderCreating
+                ? 'Memproses...'
+                : paymentMethod === 'PAKASIR' && !pwaOrderId
+                  ? `Buat Pesanan - Rp ${total.toLocaleString('id-ID')}`
+                  : `Confirm Payment - Rp ${total.toLocaleString('id-ID')}`}
             </button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   );

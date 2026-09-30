@@ -59,6 +59,10 @@ export async function middleware(request: NextRequest) {
   // Lewati semua route API PWA publik
   if (pathname.startsWith("/api/v1/pwa")) return NextResponse.next();
 
+  // Pakasir: endpoint pembayaran & webhook publik (tanpa session POS)
+  if (pathname.startsWith("/api/payments") || pathname.startsWith("/api/webhooks"))
+    return NextResponse.next();
+
   // Lewati halaman customer (dinamis /{tableId}/menu, /{tableId}/cart, dll)
   // Pola: segment pertama bukan keyword admin/cashier/cms/login/api
   const firstSegment = pathname.split("/")[1];

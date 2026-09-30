@@ -41,6 +41,12 @@ enum PwaOrderStatus {
   CANCELLED
 }
 
+enum PakasirPaymentStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
 // -------------------------------------------------------------
 // USER (Kasir & Admin)
 // -------------------------------------------------------------
@@ -165,7 +171,42 @@ model PwaOrder {
 
   customer Customer? @relation(fields: [customerId], references: [id])
 
+  pakasirPayments PakasirPayment[]
+
   @@map("pwa_orders")
+}
+
+// -------------------------------------------------------------
+// PAKASIR PAYMENT (Pembayaran online via Pakasir API v2)
+// orderId unik = order_id yang dikirim ke Pakasir (bukan id PwaOrder).
+// pwaOrderId opsional = relasi ke pesanan PWA internal.
+// -------------------------------------------------------------
+
+model PakasirPayment {
+  id           String                @id @default(cuid())
+  orderId      String                @unique
+  pwaOrderId   String?
+  txnId        String                @unique
+  method       String
+  amount       Int
+  fee          Int                   @default(0)
+  totalPayment Int                   @default(0)
+  status       PakasirPaymentStatus  @default(PENDING)
+  paymentLink  String?
+  qrString     String?
+  vaNumber     String?
+  expiredAt    DateTime?
+  isSandbox    Boolean               @default(false)
+  completedAt  DateTime?
+  lastCheckedAt DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  pwaOrder PwaOrder? @relation(fields: [pwaOrderId], references: [id], onDelete: SetNull)
+
+  @@index([pwaOrderId])
+  @@index([status])
+  @@map("pakasir_payments")
 }
 
 // -------------------------------------------------------------
