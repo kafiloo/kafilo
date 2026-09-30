@@ -14,10 +14,10 @@ import {
   assertPakasirAmount,
   buildPaymentLink,
   createTransaction,
-  PakasirValidationError,
 } from "@/lib/pakasir";
 import { generatePakasirOrderId } from "@/lib/pakasir-order";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { classifyPaymentError, logPaymentError } from "@/lib/payment-api-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -109,7 +109,10 @@ export async function POST(req: NextRequest) {
       assertPakasirAmount(method as (typeof PAKASIR_METHODS)[number], amount);
     } catch (e) {
       return NextResponse.json(
-        { message: e instanceof Error ? e.message : "Nominal di luar batas metode." },
+        {
+          reason: "AMOUNT_OUT_OF_RANGE",
+          message: e instanceof Error ? e.message : "Nominal di luar batas metode.",
+        },
         { status: 400 }
       );
     }
@@ -158,14 +161,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ payment: toSafe(saved), reused: false }, { status: 201 });
   } catch (error) {
-    if (error instanceof PakasirValidationError)
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    if (error instanceof Error && error.message.includes("[env]"))
-      return NextResponse.json(
-        { message: "Konfigurasi pembayaran belum lengkap di server." },
-        { status: 500 }
-      );
-    console.error("[POST /api/payments]", error);
-    return NextResponse.json({ message: "Gagal membuat pembayaran." }, { status: 500 });
+    const res = classifyPaymentError(error, "POST /api/payments");
+    logPaymentError("POST /api/payments", error, res);
+    return NextResponse.json(res.body, { status: res.status });
   }
 }

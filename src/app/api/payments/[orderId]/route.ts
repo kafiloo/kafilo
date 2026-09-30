@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getTransactionStatus } from "@/lib/pakasir";
 import { fulfillPakasirPayment } from "@/lib/pakasir-fulfillment";
+import { classifyPaymentError, logPaymentError } from "@/lib/payment-api-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -83,7 +84,8 @@ export async function GET(
       synced,
     });
   } catch (error) {
-    console.error("[GET /api/payments/:orderId]", error);
-    return NextResponse.json({ message: "Gagal mengambil status pembayaran." }, { status: 500 });
+    const res = classifyPaymentError(error, "GET /api/payments/:orderId");
+    logPaymentError("GET /api/payments/:orderId", error, res);
+    return NextResponse.json(res.body, { status: res.status });
   }
 }

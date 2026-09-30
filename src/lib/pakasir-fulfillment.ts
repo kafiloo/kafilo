@@ -10,6 +10,14 @@ type Tx = Prisma.TransactionClient | PrismaClient;
 
 const isProd = () => process.env.NODE_ENV === "production";
 
+/**
+ * Sandbox tidak memicu pemenuhan di production secara default (aman).
+ * Untuk testing end-to-end di production dengan API key sandbox,
+ * set PAKASIR_ALLOW_SANDBOX_FULFILLMENT="true".
+ */
+const allowSandboxFulfillment = () =>
+  process.env.PAKASIR_ALLOW_SANDBOX_FULFILLMENT === "true";
+
 async function deductStockForPwaOrder(orderId: string, tx: Tx): Promise<void> {
   const order = await (tx as PrismaClient).pwaOrder.findUnique({
     where: { id: orderId },
@@ -68,8 +76,16 @@ export async function fulfillPakasirPayment(
 
   if (!payment.pwaOrderId) return "completed-no-order";
 
-  // Sandbox tidak boleh memicu pemenuhan di production.
-  if (opts.isSandbox && isProd()) return "completed-no-order";
+  // Sandbox tidak boleh memicu pemenuhan di production (kecuali diizinkan
+  // eksplisit untuk testing lewat PAKASIR_ALLOW_SANDBOX_FULFILLMENT).
+  if (opts.isSandbox && isProd() && !allowSandboxFulfillment()) {
+    console.warn(
+      "[pakasir] Pembayaran SANDBOX diterima di production: pembayaran ditandai " +
+        "COMPLETED tetapi pesanan TIDAK dipenuhi. Gunakan API key production " +
+        "Pakasir, atau set PAKASIR_ALLOW_SANDBOX_FULFILLMENT=true bila ini testing."
+    );
+    return "completed-no-order";
+  }
 
   const pwaOrder = await db.pwaOrder.findUnique({
     where: { id: payment.pwaOrderId },

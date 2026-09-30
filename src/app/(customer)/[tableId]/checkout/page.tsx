@@ -90,7 +90,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
           'Content-Type': 'application/json',
           Authorization: `Bearer ${customer.token}`,
         },
-        body: JSON.stringify({ tableId, items: cart }),
+        body: JSON.stringify({ tableId, items: cart, paymentMethod: 'QRIS' }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

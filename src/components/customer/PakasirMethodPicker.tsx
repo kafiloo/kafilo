@@ -25,6 +25,7 @@ export const METHOD_META: Array<{
   { id: "maybank_va", label: "Maybank VA", hint: "Virtual Account Maybank", min: 10_000, max: 50_000_000 },
   { id: "bnc_va", label: "BNC VA", hint: "Virtual Account BNC", min: 10_000, max: 50_000_000 },
   { id: "artha_graha_va", label: "Artha Graha VA", hint: "Virtual Account AG", min: 10_000, max: 50_000_000 },
+  { id: "atm_bersama_va", label: "ATM Bersama VA", hint: "Virtual Account ATM Bersama", min: 10_000, max: 50_000_000 },
   { id: "sampoerna_va", label: "Sampoerna VA", hint: "Virtual Account Sampoerna", min: 10_000, max: 50_000_000 },
 ];
 

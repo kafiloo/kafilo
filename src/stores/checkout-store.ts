@@ -18,6 +18,7 @@ export type CheckoutMethod =
   | "maybank_va"
   | "bnc_va"
   | "artha_graha_va"
+  | "atm_bersama_va"
   | "sampoerna_va";
 
 export interface CheckoutPayment {
@@ -99,7 +100,20 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        set({ status: "error", error: data.message ?? "Gagal membuat pembayaran." });
+        const message: string = data.message ?? "Gagal membuat pembayaran.";
+        const detail: string | null = typeof data.detail === "string" ? data.detail : null;
+        const reason: string | null = typeof data.reason === "string" ? data.reason : null;
+        // Jejak teknis untuk developer/owner (buka console browser).
+        console.error("[checkout] gagal membuat pembayaran", {
+          reason,
+          missing: data.missing,
+          pakasirStatus: data.pakasirStatus,
+          detail,
+        });
+        set({
+          status: "error",
+          error: detail ? `${message} — ${detail}` : message,
+        });
         return null;
       }
       const payment = data.payment as CheckoutPayment;

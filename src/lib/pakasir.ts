@@ -20,6 +20,7 @@ export const PAKASIR_METHODS = [
   "maybank_va",
   "bnc_va",
   "artha_graha_va",
+  "atm_bersama_va",
   "sampoerna_va",
 ] as const;
 
@@ -39,6 +40,7 @@ export const PAKASIR_METHOD_LIMITS: Record<
   maybank_va: { min: 10_000, max: 50_000_000 },
   bnc_va: { min: 10_000, max: 50_000_000 },
   artha_graha_va: { min: 10_000, max: 50_000_000 },
+  atm_bersama_va: { min: 10_000, max: 50_000_000 },
   sampoerna_va: { min: 10_000, max: 50_000_000 },
 };
 

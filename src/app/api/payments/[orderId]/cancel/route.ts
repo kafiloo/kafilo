@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cancelTransaction } from "@/lib/pakasir";
+import { classifyPaymentError, logPaymentError } from "@/lib/payment-api-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,7 +32,8 @@ export async function POST(
     });
     return NextResponse.json({ message: remote.message ?? "Transaksi dibatalkan." });
   } catch (error) {
-    console.error("[POST /api/payments/:orderId/cancel]", error);
-    return NextResponse.json({ message: "Gagal membatalkan transaksi." }, { status: 500 });
+    const res = classifyPaymentError(error, "POST /api/payments/:orderId/cancel");
+    logPaymentError("POST /api/payments/:orderId/cancel", error, res);
+    return NextResponse.json(res.body, { status: res.status });
   }
 }

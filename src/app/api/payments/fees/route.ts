@@ -3,7 +3,8 @@
 // =============================================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { getPaymentFees, PakasirValidationError } from "@/lib/pakasir";
+import { getPaymentFees } from "@/lib/pakasir";
+import { classifyPaymentError, logPaymentError } from "@/lib/payment-api-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,15 +14,14 @@ export async function GET(req: NextRequest) {
     const amount = Number(new URL(req.url).searchParams.get("amount"));
     if (!Number.isInteger(amount) || amount <= 0)
       return NextResponse.json(
-        { message: "Query ?amount= harus integer positif (rupiah)." },
+        { reason: "INPUT_INVALID", message: "Query ?amount= harus integer positif (rupiah)." },
         { status: 400 }
       );
     const fees = await getPaymentFees(amount);
     return NextResponse.json({ amount, fees });
   } catch (error) {
-    if (error instanceof PakasirValidationError)
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    console.error("[GET /api/payments/fees]", error);
-    return NextResponse.json({ message: "Gagal mengambil estimasi biaya." }, { status: 500 });
+    const res = classifyPaymentError(error, "GET /api/payments/fees");
+    logPaymentError("GET /api/payments/fees", error, res);
+    return NextResponse.json(res.body, { status: res.status });
   }
 }

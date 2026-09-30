@@ -51,9 +51,15 @@ bila ada yang kosong.
 ### 2. Jalankan migrasi Prisma
 
 ```bash
-npx prisma migrate dev   # menerapkan 20260930073131_add_pakasir_payments
+npx prisma migrate dev     # lokal: menerapkan 20260930073131_add_pakasir_payments
+npx prisma migrate deploy  # DB tujuan yang sudah ada (production/Neon)
 npx prisma generate
 ```
+
+`npm run build` juga otomatis menjalankan `prisma migrate deploy` lebih dulu,
+jadi setiap deploy ke Vercel akan menyinkronkan tabel `pakasir_payments`.
+Tanpa langkah ini, `POST /api/payments` akan gagal 500
+(`reason: "DB_MIGRATION_REQUIRED"`).
 
 ### 3. Set Webhook URL di dashboard Pakasir
 
@@ -83,6 +89,7 @@ sandbox. Cek log server + `npx prisma studio` (tabel
 
 | Method | Path | Keterangan |
 | ------ | ---- | ---------- |
+| GET | `/api/payments/health` | **Diagnosa**: status env, tabel DB, dan koneksi Pakasir. Buka di browser. |
 | POST | `/api/payments` | Buat transaksi. Body: `{ method, pwaOrderId }` (checkout PWA, nominal = totalAmount PwaOrder) atau `{ method, planId }` (checkout langganan, nominal = harga paket di server). Tidak ada `amount` dari client. |
 | GET | `/api/payments/[orderId]` | Status dari DB + sinkronisasi max 1x/4 dtk |
 | POST | `/api/payments/[orderId]/cancel` | Batalkan bila masih PENDING |
@@ -113,6 +120,43 @@ diarahkan ke `/landingpage/berhasil`.
 
 Variabel env yang dipakai hanya: `DATABASE_URL`, `JWT_SECRET`, `PAKASIR_*`.
 Tidak ada ongkir — total pesanan = subtotal item + pajak/biaya toko.
+
+### Cek sehat / troubleshooting
+
+Buka `https://<domain-anda>/api/payments/health` di browser. Contoh hasil normal:
+
+```json
+{
+  "ok": true,
+  "env": { "PAKASIR_SLUG": true, "PAKASIR_API_KEY": true, "PAKASIR_WEBHOOK_SECRET": true,
+           "DATABASE_URL": true, "JWT_SECRET": true, "missing": [] },
+  "db": { "reachable": true, "pakasirPaymentsTable": true, "pendingPayments": 0 },
+  "pakasir": { "reachable": true, "feeCount": 10 }
+}
+```
+
+Jika `ok: false`, cocokkan dengan tabel berikut:
+
+| Gejala di `/health` | Penyebab | Tindakan |
+| --- | --- | --- |
+| `env.missing` berisi nama variabel | Env belum di-set di server | Set di Vercel → Settings → Environment Variables, lalu redeploy |
+| `db.pakasirPaymentsTable: false` | Migrasi belum di-deploy | `npx prisma migrate deploy` (atau deploy ulang, `build` sudah otomatis migrate) |
+| `db.reachable: false` | `DATABASE_URL` salah / DB mati | Periksa connection string & status Neon |
+| `pakasir.reachable: false` | Base URL / jaringan | Periksa `PAKASIR_BASE_URL` (default `https://app.pakasir.com`) |
+
+`POST /api/payments` juga mengembalikan field `reason` + `detail` agar penyebab
+langsung terbaca: `ENV_MISSING`, `DB_MIGRATION_REQUIRED`, `DB_UNREACHABLE`,
+`PAKASIR_REJECTED` (beserta `pakasirStatus`), `PAKASIR_UNREACHABLE`,
+`AMOUNT_OUT_OF_RANGE`. Detail teknis juga muncul di console browser (prefix
+`[checkout]`) dan di log server Vercel.
+
+> **Penting — API key sandbox.** Pakasir mengembalikan `isSandbox: true` bila
+> key yang dipakai masih sandbox. Dampaknya: `qrString` hanya contoh
+> (`lorem-ipsum-pakasir-qris-example`, tidak bisa di-scan) dan pembayaran
+> **tidak** memenuhi pesanan di production (pengaman anti "uang palsu").
+> Untuk terima pembayaran nyata, ganti ke API key **production** Pakasir.
+> Kalau memang sedang uji coba di production, set
+> `PAKASIR_ALLOW_SANDBOX_FULFILLMENT="true"` supaya pesanan tetap diproses.
 
 ### Komponen frontend
 

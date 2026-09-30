@@ -113,3 +113,65 @@ kini 100% via Pakasir API v2. Tidak ada ongkir/pengiriman.
 - [ ] `PaymentMethod.QRIS` dan `StoreSettings.acceptQris` sengaja dipertahankan (generik) — dipakai sebagai flag "online payment" di UI
 - [ ] Rotasi/nonaktifkan API key RajaOngkir, Komerce, QRISLY di dashboard masing-masing
 - [ ] Set Webhook URL Pakasir ke `https://<domain>/api/webhooks/pakasir`
+
+---
+
+# Perbaikan Pasca-Deploy: `POST /api/payments` 500 (30 Sep 2026, sore)
+
+Gejala: `POST https://kafiloo.com/api/payments 500 (Internal Server Error)`,
+QRIS tidak muncul di halaman checkout.
+
+## Akar Masalah
+- [x] **Tabel `pakasir_payments` belum ada di DB production (Neon)** — migrasi
+  `20260930073131_add_pakasir_payments` belum pernah di-deploy. `createTransaction()`
+  sukses ke Pakasir, tapi `prisma.pakasirPayment.create()` gagal (P2021) → 500,
+  sehingga `payment` tidak pernah kembali ke client → QR tidak tampil.
+- [x] Diperparah oleh: catch di `POST /api/payments` **tidak mencatat** error env
+  dan mengubah semua error jadi pesan generik `"Gagal membuat pembayaran."`,
+  jadi penyebabnya tidak terlihat di log maupun di UI.
+- [x] Jadwal deploy: `npm run build` tidak pernah menjalankan migrasi.
+
+## Perbaikan
+- [x] `npx prisma migrate deploy` dijalankan ke DB production → tabel
+  `pakasir_payments` (+ enum + 4 index + FK) kini ada; `prisma migrate status`
+  = "Database schema is up to date"
+- [x] `package.json`: `"build": "prisma migrate deploy && next build --webpack"`
+  + script `db:deploy` → deploy berikutnya selalu menyinkronkan schema
+- [x] `src/lib/payment-api-error.ts` (baru): `classifyPaymentError()` +
+  `logPaymentError()` → response 400/500/502/503 dengan `reason` + `detail`
+  (secret di-redact): `ENV_MISSING`, `DB_MIGRATION_REQUIRED`, `DB_UNREACHABLE`,
+  `PAKASIR_REJECTED` (+`pakasirStatus`), `PAKASIR_UNREACHABLE`,
+  `AMOUNT_OUT_OF_RANGE`, `INTERNAL`
+- [x] `src/app/api/payments/{route,[orderId]/route,[orderId]/cancel/route,fees/route}.ts`
+  memakai classifier tersebut; semua error (termasuk env) sekarang **selalu** di-log
+- [x] `src/lib/env.ts`: `MissingEnvError` (membawa daftar var yang hilang) +
+  `getPakasirEnvStatus()` + `REQUIRED_PAYMENT_ENV`
+- [x] `GET /api/payments/health` (baru): diagnosa `env` / `db` / `pakasir` tanpa
+  membocorkan secret — dibuka langsung dari browser production
+- [x] `src/stores/checkout-store.ts`: error checkout kini menampilkan `detail`
+  dan menulis `{reason, missing, pakasirStatus, detail}` ke console browser
+- [x] `src/lib/pakasir.ts` + picker + store: tambah metode `atm_bersama_va`
+  (dilaporkan API `payment-fee` tapi sebelumnya tidak ada di allow-list)
+- [x] `src/app/(customer)/[tableId]/checkout/page.tsx`: pesanan online kini
+  dibuat dengan `paymentMethod: 'QRIS'` (sebelumnya selalu tersimpan `CASH`)
+- [x] `src/lib/pakasir-fulfillment.ts`: sandbox di production diberi
+  `console.warn` + opsi `PAKASIR_ALLOW_SANDBOX_FULFILLMENT="true"` untuk testing
+
+## Verifikasi (end-to-end ke Pakasir asli)
+- [x] `npx tsc --noEmit` OK, `npx eslint` OK, `npm run build` EXIT=0
+- [x] `GET /api/payments/health` → `ok: true` (env lengkap, tabel ada, Pakasir reachable, 10 fee)
+- [x] `POST /api/payments {method:"qris", planId:"starter"}` → **201** +
+  `qrString`, `txnId`, `fee`, `totalPayment`
+- [x] `GET /api/payments/[orderId]` → 200, `synced: true`
+- [x] `POST /api/payments/[orderId]/cancel` → 502 `PAKASIR_REJECTED`
+  (`pakasirStatus: 503`) — Pakasir sendiri yang sedang error nginx; classifier
+  melaporkan penyebab aslinya, tidak lagi pesan generik
+- [x] Baris transaksi uji coba dihapus dari DB (sisa 0 baris)
+
+## Temuan Penting
+- [ ] **API key Pakasir yang dipakai masih SANDBOX** (`isSandbox: true`,
+  `qrString: "lorem-ipsum-pakasir-qris-example"`, tidak bisa di-scan). Untuk
+  pembayaran nyata ganti ke API key production Pakasir.
+- [ ] Selama key masih sandbox, pesanan di production **tidak** otomatis menjadi
+  `BEING_PREPARED` (pengaman `isSandbox && isProd`). Set
+  `PAKASIR_ALLOW_SANDBOX_FULFILLMENT="true"` bila memang uji coba di production.
