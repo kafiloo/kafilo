@@ -1,6 +1,6 @@
 // =============================================================
 // Calendar & Monthly Report — /cms/calendar/page.tsx
-// Superadmin: Agregasi laporan per bulan + export PDF placeholder
+// Superadmin: Agregasi laporan per bulan + export PDF
 // =============================================================
 
 "use client";
@@ -79,9 +79,23 @@ export default function CalendarPage() {
     try {
       const monthStr = selectedMonth ? `${year}-${String(selectedMonth).padStart(2, "0")}` : `${year}`;
       const res = await fetch(`/api/reports/export-pdf?month=${monthStr}`);
-      const data = await res.json();
-      alert(`Export PDF: ${data.message}\n\nFitur ini sedang dalam pengembangan dan akan segera tersedia.`);
-    } catch { alert("Gagal menghubungi server export."); }
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Gagal membuat PDF laporan.");
+      }
+
+      const pdf = await res.blob();
+      const downloadUrl = URL.createObjectURL(pdf);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `laporan-penjualan-${monthStr}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Gagal menghubungi server export.");
+    }
     finally { setExporting(false); }
   };
 
@@ -103,7 +117,7 @@ export default function CalendarPage() {
           <button onClick={handleExportPdf} disabled={exporting}
             className="flex items-center gap-2 bg-[#6C4E31] hover:bg-[#583f27] text-white px-5 py-2.5 rounded-2xl text-[13px] font-bold shadow-[0_4px_14px_rgba(108,78,49,0.25)] hover:-translate-y-0.5 active:scale-[0.98] transition-all disabled:opacity-60 disabled:translate-y-0">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-            {exporting ? "Exporting..." : "Export PDF"}
+            {exporting ? "Membuat PDF..." : "Export PDF"}
           </button>
         </div>
       </div>
