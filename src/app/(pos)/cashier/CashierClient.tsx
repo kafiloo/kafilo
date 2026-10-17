@@ -64,6 +64,10 @@ export default function CashierClient({ cashierName }: { cashierName: string }) 
   const [cashAmount, setCashAmount] = useState<number | 'EXACT' | null>('EXACT');
   const [transactionId, setTransactionId] = useState('');
   const [showLoyaltyModal, setShowLoyaltyModal] = useState(false);
+  
+  // 🔥 STATE BARU UNTUK POP-OUT STRUK SEBELUM SUCCESS 🔥
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const [storeInfo, setStoreInfo] = useState({ 
@@ -349,21 +353,9 @@ export default function CashierClient({ cashierName }: { cashierName: string }) 
         throw new Error(errData.message || "Failed to process payment in backend");
       }
 
+      // TUTUP CHECKOUT, LALU TAMPILKAN MODAL STRUK (JANGAN CLEAR CART DULU)
       setShowCheckoutModal(false);
-      cart.forEach(item => removeFromCart(item.id));
-      setPhoneNumber('');
-
-      setToast({
-        show: true,
-        type: 'success',
-        title: 'Payment Successful!',
-        txId: transactionId,
-        total: total
-      });
-
-      setTimeout(() => {
-        setToast(prev => ({ ...prev, show: false }));
-      }, 4000);
+      setShowPrintModal(true);
 
     } catch (err: any) {
       console.error("[confirmPayment]", err);
@@ -378,6 +370,31 @@ export default function CashierClient({ cashierName }: { cashierName: string }) 
         setToast(prev => ({ ...prev, show: false }));
       }, 4000);
     }
+  };
+
+  // 🔥 FUNGSI UNTUK MENANGANI TOMBOL YA / TIDAK PADA MODAL STRUK 🔥
+  const handleFinishOrder = (printReceipt: boolean) => {
+    if (printReceipt) {
+      window.print();
+    }
+    
+    setShowPrintModal(false);
+    
+    // Clear cart dan jalankan notifikasi success
+    cart.forEach(item => removeFromCart(item.id));
+    setPhoneNumber('');
+
+    setToast({
+      show: true,
+      type: 'success',
+      title: 'Payment Successful!',
+      txId: transactionId,
+      total: total
+    });
+
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 4000);
   };
 
   const parseItemName = (fullName: string) => {
@@ -1047,6 +1064,62 @@ export default function CashierClient({ cashierName }: { cashierName: string }) 
               />
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL BARU: PRINT STRUK (POP-OUT SEBELUM SUCCESS)
+          ========================================== */}
+      {showPrintModal && (
+        <div className="fixed inset-0 z-[80] bg-[#1a1f36]/60 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-[0.96] duration-300 ease-out max-h-[90vh]">
+            {/* PERBAIKAN: Tambah w-full flex-col items-center dan hilangkan scrollbar yang menggeser layout */}
+            <div className="flex-1 p-6 overflow-y-auto flex flex-col items-center bg-[#f4f5f7] w-full scrollbar-hide">
+              <ReceiptTicket
+                data={{
+                  storeName: storeInfo.name,
+                  date: new Date().toLocaleDateString('id-ID'),
+                  time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                  txId: transactionId || "TX00000000",
+                  cashierName: cashierName.split(' ')[0],
+                  subtotal: subtotal,
+                  tax: taxAmount,
+                  taxRate: storeInfo.taxRate,
+                  serviceCharge: serviceAmount,
+                  serviceRate: storeInfo.serviceCharge,
+                  total: total,
+                  paymentMethod: paymentMethod,
+                  wifiName: storeInfo.wifiName,
+                  wifiPassword: storeInfo.wifiPassword,
+                  footerMessage: storeInfo.receiptFooter,
+                  items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    subTotal: item.price * item.quantity
+                  }))
+                }}
+              />
+            </div>
+            <div className="p-6 bg-white border-t border-gray-100 text-center flex flex-col gap-4">
+              <h3 className="text-lg font-black text-[#1a1f36]">Cetak Struk?</h3>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleFinishOrder(false)}
+                  className="flex-1 py-3 rounded-xl border-2 border-gray-100 text-gray-500 font-bold text-[14px] hover:bg-gray-50 transition-colors"
+                >
+                  Tidak
+                </button>
+                <button
+                  onClick={() => handleFinishOrder(true)}
+                  className="flex-1 py-3 rounded-xl bg-[#6C4E31] text-white font-bold text-[14px] hover:bg-[#583f27] shadow-md transition-all active:scale-95"
+                >
+                  Ya
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

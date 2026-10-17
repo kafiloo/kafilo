@@ -1,0 +1,1 @@
+globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/loyalty/rewards/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"D:\\Business\\Project\\Code\\kafilo\\kafilo-main\\src\\app\\api\\loyalty\\rewards\\route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};
