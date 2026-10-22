@@ -312,7 +312,7 @@ export default function InventoryPage() {
               {debouncedSearch ? "Tidak ada hasil" : "Belum ada item inventaris"}
             </p>
             <p className="text-sm">
-              {debouncedSearch ? "Coba kata kunci lain." : "Klik tombol \"Add New Stock\" untuk memulai."}
+              {debouncedSearch ? "Coba kata kunci lain." : 'Klik tombol "Add New Stock" untuk memulai.'}
             </p>
           </div>
         ) : (
@@ -487,7 +487,7 @@ export default function InventoryPage() {
                 <input
                   type="number"
                   min="0"
-                  value={formData.currentStock}
+                  value={formData.currentStock === 0 ? "" : formData.currentStock}
                   onChange={(e) => setFormData({ ...formData, currentStock: Number(e.target.value) })}
                   placeholder="0"
                   className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#6C4E31] focus:ring-4 focus:ring-[#6C4E31]/10 transition-all"
@@ -500,7 +500,7 @@ export default function InventoryPage() {
                 <input
                   type="number"
                   min="0"
-                  value={formData.minThreshold}
+                  value={formData.minThreshold === 0 ? "" : formData.minThreshold}
                   onChange={(e) => setFormData({ ...formData, minThreshold: Number(e.target.value) })}
                   placeholder="0"
                   className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#6C4E31] focus:ring-4 focus:ring-[#6C4E31]/10 transition-all"

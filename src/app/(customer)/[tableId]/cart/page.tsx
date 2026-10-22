@@ -162,6 +162,15 @@ export default function CustomerCartPage({ params }: { params: Promise<{ tableId
           </div>
         ) : (
           <div className="flex flex-col gap-3 max-w-lg mx-auto">
+            
+            {/* 🔥 BAGIAN ORDER SUMMARY & TAMBAH ITEM (MENGARAH KE MENU) 🔥 */}
+            <div className="flex justify-between items-center mb-1 px-1">
+              <h2 className="font-extrabold text-lg text-gray-900">Order Summary</h2>
+              <Link href={`/${tableId}/menu`} className="text-[#7a5c43] font-bold text-sm hover:underline">
+                Add New Item
+              </Link>
+            </div>
+
             {cart.map((item) => (
               <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-start gap-3">
                 <div className="flex-1">

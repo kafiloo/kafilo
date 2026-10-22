@@ -1,0 +1,1 @@
+globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/settings/pwa/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"D:\\Business\\Project\\Code\\kafilo\\kafilo-main\\src\\app\\api\\settings\\pwa\\route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

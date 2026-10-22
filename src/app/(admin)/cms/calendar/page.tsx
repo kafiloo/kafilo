@@ -6,6 +6,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface MonthlyData {
   month: number;
@@ -74,29 +76,109 @@ export default function CalendarPage() {
     fetchDaily(monthStr);
   };
 
+  // ── Fungsi Export PDF Client-Side ──
   const handleExportPdf = async () => {
     setExporting(true);
     try {
-      const monthStr = selectedMonth ? `${year}-${String(selectedMonth).padStart(2, "0")}` : `${year}`;
-      const res = await fetch(`/api/reports/export-pdf?month=${monthStr}`);
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Gagal membuat PDF laporan.");
+      const doc = new jsPDF();
+      const isDaily = selectedMonth !== null;
+      const title = isDaily
+        ? `Laporan Penjualan Harian - ${MONTH_FULL[selectedMonth - 1]} ${year}`
+        : `Laporan Penjualan Bulanan - Tahun ${year}`;
+
+      // Header Laporan
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(108, 78, 49); // Warna Coklat Kafiloo (#6C4E31)
+      doc.text("KAFILOO", 14, 22);
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(26, 31, 54); // Warna teks dark
+      doc.text(title, 14, 32);
+
+      doc.setFontSize(10);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Dicetak pada: ${new Date().toLocaleString("id-ID")}`, 14, 38);
+
+      // Bagian Ringkasan (Summary)
+      let startY = 48;
+      if (!isDaily && monthlyReport) {
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.text(`Total Pendapatan : Rp ${monthlyReport.totalRevenue.toLocaleString("id-ID")}`, 14, startY);
+        doc.text(`Total Order      : ${monthlyReport.totalOrders.toLocaleString("id-ID")}`, 14, startY + 6);
+        doc.text(`Rata-rata Transaksi: Rp ${monthlyReport.avgTicket.toLocaleString("id-ID")}`, 14, startY + 12);
+        startY += 20;
+      } else if (isDaily && dailyReport) {
+        doc.setFontSize(11);
+        doc.setTextColor(50, 50, 50);
+        doc.text(`Total Pendapatan : Rp ${dailyReport.totalRevenue.toLocaleString("id-ID")}`, 14, startY);
+        doc.text(`Total Order      : ${dailyReport.totalOrders.toLocaleString("id-ID")}`, 14, startY + 6);
+        startY += 14;
       }
 
-      const pdf = await res.blob();
-      const downloadUrl = URL.createObjectURL(pdf);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = `laporan-penjualan-${monthStr}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : "Gagal menghubungi server export.");
+      // Definisi Tabel
+      const tableColumn = isDaily
+        ? ["Tanggal", "Jumlah Order", "Total Revenue (Rp)"]
+        : ["Bulan", "Jumlah Order", "Total Revenue (Rp)"];
+      
+      const tableRows: any[] = [];
+
+      if (isDaily && dailyReport) {
+        dailyReport.data.forEach((d) => {
+          const dateObj = new Date(d.date);
+          const dateStr = dateObj.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+          tableRows.push([
+            dateStr,
+            d.count.toLocaleString("id-ID"),
+            d.revenue.toLocaleString("id-ID")
+          ]);
+        });
+      } else if (!isDaily && monthlyReport) {
+        monthlyReport.data.forEach((d) => {
+          tableRows.push([
+            MONTH_FULL[d.month - 1],
+            d.count.toLocaleString("id-ID"),
+            d.revenue.toLocaleString("id-ID")
+          ]);
+        });
+      }
+
+      // Generate Tabel
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: startY,
+        theme: "grid",
+        headStyles: { 
+          fillColor: [108, 78, 49], // Coklat Kafiloo
+          textColor: [255, 255, 255], 
+          fontStyle: "bold" 
+        },
+        styles: { 
+          fontSize: 10, 
+          cellPadding: 4,
+          textColor: [40, 40, 40]
+        },
+        alternateRowStyles: { 
+          fillColor: [249, 250, 251] 
+        },
+      });
+
+      // Simpan File
+      const fileName = isDaily
+        ? `Laporan_Kafiloo_${year}_${String(selectedMonth).padStart(2, "0")}.pdf`
+        : `Laporan_Kafiloo_${year}.pdf`;
+        
+      doc.save(fileName);
+
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat membuat PDF.");
+    } finally {
+      setExporting(false);
     }
-    finally { setExporting(false); }
   };
 
   const maxRevenue = monthlyReport ? Math.max(...monthlyReport.data.map(d => d.revenue), 1) : 1;
@@ -117,7 +199,7 @@ export default function CalendarPage() {
           <button onClick={handleExportPdf} disabled={exporting}
             className="flex items-center gap-2 bg-[#6C4E31] hover:bg-[#583f27] text-white px-5 py-2.5 rounded-2xl text-[13px] font-bold shadow-[0_4px_14px_rgba(108,78,49,0.25)] hover:-translate-y-0.5 active:scale-[0.98] transition-all disabled:opacity-60 disabled:translate-y-0">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-            {exporting ? "Membuat PDF..." : "Export PDF"}
+            {exporting ? "Exporting..." : "Export PDF"}
           </button>
         </div>
       </div>
