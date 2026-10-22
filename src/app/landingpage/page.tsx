@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
-// ── KOMPONEN REVEAL (Diperbaiki: Sekarang mendukung className) ──
+// ── KOMPONEN REVEAL ──
 const Reveal = ({ 
   children, 
   delay = 0, 
   direction = "up", 
   type = "slide",
-  className = "" // PERBAIKAN: Menambahkan dukungan className
+  className = "" 
 }: { 
   children: React.ReactNode, 
   delay?: number, 
@@ -62,17 +62,17 @@ export default function KofiloLandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   
-  // 🔥 TAMBAHAN: State Profil Toko
-  const [storeInfo, setStoreInfo] = useState({ name: "Kofilo", logo: "" });
+  // State Profil Toko
+  const [storeInfo, setStoreInfo] = useState({ name: "Kafiloo", logo: "" });
 
-  // 🔥 TAMBAHAN: Fetch data nama dan logo
+  // Fetch data nama dan logo
   useEffect(() => {
     fetch("/api/public/store")
       .then(res => res.json())
       .then(data => {
         if (data.settings) {
           setStoreInfo({
-            name: data.settings.storeName || "Kofilo",
+            name: data.settings.storeName || "Kafiloo",
             logo: data.settings.logo || ""
           });
         }
@@ -106,241 +106,297 @@ export default function KofiloLandingPage() {
     { q: "Bagaimana jika internet di kafe sedang mati?", a: "Kofilo dirancang dengan sistem PWA yang memiliki cache lokal sementara. Anda tetap bisa melihat menu, meski sinkronisasi transaksi harus menunggu koneksi kembali." }
   ];
 
-  // Inisial Toko Dinamis
   const storeInitial = storeInfo.name ? storeInfo.name.charAt(0).toUpperCase() : "K";
 
   return (
-    <div className="min-h-screen bg-[#Fdfbf9] text-[#1a1f36] font-sans selection:bg-[#6C4E31] selection:text-white overflow-hidden relative">
+    <div className="min-h-screen bg-[#FEFAF1] text-[#1a1f36] font-sans selection:bg-[#1a1f36] selection:text-white overflow-hidden relative">
       
       {/* ── CSS KEYFRAMES ── */}
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
-        @keyframes float-reverse { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(20px); } }
-        @keyframes blob { 0%, 100% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } }
         @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-100%); } }
-        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        
-        .animate-float { animation: float 7s ease-in-out infinite; }
-        .animate-float-reverse { animation: float-reverse 8s ease-in-out infinite; }
-        .animate-blob { animation: blob 15s infinite alternate; }
-        .animate-blob-delayed { animation: blob 15s infinite alternate; animation-delay: 4s; }
-        .animate-marquee { display: flex; animation: marquee 25s linear infinite; }
-        
-        .bg-grid-pattern { background-image: radial-gradient(rgba(108, 78, 49, 0.15) 1px, transparent 1px); background-size: 40px 40px; }
-        .glass-panel { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .animate-marquee { display: flex; animation: marquee 30s linear infinite; }
       `}} />
 
-      {/* ── BACKGROUND ORBS & GRID ── */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-60 -z-30 pointer-events-none"></div>
-      <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-orange-200/30 rounded-full blur-[150px] -z-20 animate-blob mix-blend-multiply pointer-events-none"></div>
-      <div className="absolute top-40 right-0 w-[600px] h-[600px] bg-[#6C4E31]/10 rounded-full blur-[150px] -z-20 animate-blob-delayed mix-blend-multiply pointer-events-none"></div>
-
-      {/* ── NAVBAR (Floating Glass) ── */}
+      {/* ── NAVBAR ── */}
       <div className="fixed top-0 w-full z-50 p-4 transition-all duration-500 pointer-events-none">
-        <nav className={`max-w-6xl mx-auto pointer-events-auto transition-all duration-500 rounded-full px-6 py-3 flex items-center justify-between ${scrolled ? "bg-white/80 backdrop-blur-2xl border border-white/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]" : "bg-transparent py-4"}`}>
+        <nav className={`max-w-7xl mx-auto pointer-events-auto transition-all duration-500 rounded-full px-6 py-3 flex items-center justify-between ${scrolled ? "bg-[#FCFBF7]/90 backdrop-blur-md shadow-sm" : "bg-transparent py-4"}`}>
+          
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-            {/* 🔥 UBAHAN: Nav Logo Dinamis */}
             {storeInfo.logo ? (
-              <img src={storeInfo.logo} alt="Logo" className="w-10 h-10 rounded-full object-cover shadow-lg group-hover:scale-105 transition-all duration-300 bg-white" />
+              <img src={storeInfo.logo} alt="Logo" className="w-8 h-8 rounded-full object-cover group-hover:scale-105 transition-all duration-300" />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-[#1a1f36] flex items-center justify-center text-white text-lg shadow-lg group-hover:scale-105 group-hover:bg-[#6C4E31] transition-all duration-300">
-                <span className="font-black tracking-tighter">{storeInitial}</span>
+              <div className="w-8 h-8 rounded-full bg-[#18181b] flex items-center justify-center shadow-sm group-hover:scale-105 transition-all duration-300 relative">
+                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
               </div>
             )}
-            <span className="font-black text-[22px] tracking-tight">{storeInfo.name}.</span>
+            <span className="font-bold text-[18px] tracking-tight">{storeInfo.name}</span>
           </div>
           
-          <div className="hidden md:flex items-center gap-2">
-            {['Manfaat', 'Cara Kerja', 'Fitur', 'Harga', 'FAQ'].map((item) => (
+          <div className="hidden md:flex items-center gap-8">
+            {['Fitur', 'Showcase', 'Review', 'FAQ'].map((item) => (
               <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={(e) => scrollToSection(e, item.toLowerCase().replace(' ', '-'))} 
-                 className="px-4 py-2 text-[14px] font-bold text-gray-500 hover:text-[#1a1f36] hover:bg-gray-100/50 rounded-full transition-all duration-300">
+                 className="text-[14px] font-medium text-gray-500 hover:text-[#1a1f36] transition-colors duration-300">
                 {item}
               </a>
             ))}
           </div>
 
           <div className="flex items-center gap-3">
-             <Link href="/cms/dashboard" className="hidden md:block text-[14px] font-bold text-gray-600 hover:text-[#6C4E31] transition-colors">
-              Login Owner
-            </Link>
-             <Link href="/landingpage/checkout?plan=starter" className="bg-[#1a1f36] hover:bg-[#6C4E31] text-white px-6 py-2.5 rounded-full text-[14px] font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                Buy Paket
-             </Link>
+             <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-white hover:text-black transition-all bg-transparent shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+                </svg>
+             </button>
           </div>
         </nav>
       </div>
 
       {/* ── HERO SECTION ── */}
-      <section className="relative pt-48 pb-20 lg:pt-60 lg:pb-32 px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
+      <section className="relative pt-40 pb-16 lg:pt-48 lg:pb-24 px-6 lg:px-8 max-w-6xl mx-auto flex flex-col items-center text-center z-10">
         
-        <Reveal type="blur" delay={0}>
-          <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full glass-panel text-[#6C4E31] text-[13px] font-extrabold tracking-widest uppercase mb-8 shadow-sm border border-white">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-            </span>
-            Kofilo Enterprise v2.0 Rilis!
-          </div>
-        </Reveal>
-
         <Reveal type="scale" delay={150}>
-          <h1 className="text-[52px] md:text-[84px] font-black tracking-tighter leading-[1.05] mb-8 max-w-5xl mx-auto text-[#1a1f36]">
-            Sistem Kasir Masa Depan. <br className="hidden md:block"/>
-            <span className="relative inline-block mt-2">
-              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-[#6C4E31] to-[#c78b54]">Dirancang Untuk F&B.</span>
-              <div className="absolute bottom-1 left-0 w-full h-4 bg-orange-200/60 -z-10 rounded-full blur-md"></div>
-            </span>
+          <h1 className="text-[44px] md:text-[64px] lg:text-[76px] font-bold tracking-tight leading-[1.1] mb-6 max-w-4xl mx-auto text-[#1a1f36]">
+            Operasional kedai,<br />
+            terasa <span className="italic font-normal">refined.</span>
           </h1>
         </Reveal>
 
         <Reveal type="slide" delay={300}>
-          <p className="text-[18px] md:text-[22px] text-gray-500 font-medium max-w-3xl mx-auto mb-12 leading-relaxed">
-            PWA Self-Order, Manajemen Stok, Kasir Cloud, dan Program Loyalty Otomatis. Semua yang Anda butuhkan untuk melipatgandakan omset kafe tanpa menambah beban kerja.
+          <p className="text-[15px] md:text-[17px] text-gray-500 font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
+            Kafiloo adalah platform kasir & operasional premium untuk kedai kopi dan restoran modern. Cepat, tenang, dan dibuat untuk tim yang serius soal detail.
           </p>
         </Reveal>
 
         <Reveal type="scale" delay={450}>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-            <Link href="/landingpage/checkout?plan=starter" className="relative w-full sm:w-auto overflow-hidden bg-gradient-to-r from-[#6C4E31] to-[#583f27] text-white px-10 py-5 rounded-full text-[16px] font-black shadow-[0_15px_30px_-10px_rgba(108,78,49,0.6)] hover:shadow-[0_20px_40px_-10px_rgba(108,78,49,0.8)] hover:-translate-y-1 transition-all duration-500 flex items-center justify-center gap-3 group">
-              <span className="relative z-10 flex items-center gap-2">
-                Buy Paket Sekarang
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5 group-hover:translate-x-1 transition-transform"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-              </span>
-              <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]"></div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/landingpage/checkout?plan=starter" className="w-full sm:w-auto bg-[#18181b] hover:bg-black text-white px-8 py-3.5 rounded-full text-[14.5px] font-medium transition-all flex items-center justify-center gap-2 group shadow-md hover:shadow-lg">
+              Coba Demo Gratis
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 group-hover:translate-x-1 transition-transform"><path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" /></svg>
             </Link>
-            <a href="#fitur" onClick={(e) => scrollToSection(e, 'fitur')} className="w-full sm:w-auto glass-panel text-[#1a1f36] px-10 py-5 rounded-full text-[16px] font-extrabold hover:bg-white hover:-translate-y-1 transition-all duration-500 shadow-sm hover:shadow-xl flex items-center justify-center gap-3 cursor-pointer border border-gray-200">
-              Lihat Demo Fitur
+            <a href="#harga" onClick={(e) => scrollToSection(e, 'harga')} className="w-full sm:w-auto bg-white text-[#1a1f36] px-8 py-3.5 rounded-full text-[14.5px] font-medium hover:bg-gray-50 transition-all border border-gray-200 shadow-sm">
+              Lihat Paket & Harga
             </a>
           </div>
         </Reveal>
 
-        {/* ── Dekorasi Dashboard UI Float ── */}
-        <Reveal type="scale" delay={700} className="w-full">
-          <div className="mt-28 relative w-full max-w-5xl mx-auto h-[300px] md:h-[450px] animate-float perspective-1000">
-            <div className="absolute inset-0 glass-panel rounded-[24px] md:rounded-[40px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border-white border-2 p-4 md:p-6 overflow-hidden z-20 flex flex-col">
-              {/* Fake UI Header */}
-              <div className="flex justify-between items-center mb-4 md:mb-8 border-b border-gray-100 pb-3 md:pb-4">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-rose-400"></div><div className="w-3 h-3 rounded-full bg-amber-400"></div><div className="w-3 h-3 rounded-full bg-emerald-400"></div>
+        {/* ── UI MOCKUP DASHBOARD ── */}
+        <Reveal type="slide" delay={600} className="w-full">
+          <div className="mt-20 relative w-full max-w-5xl mx-auto h-[450px] md:h-[650px] perspective-1000">
+            <div className="absolute inset-0 bg-[#F6F4EC] rounded-[24px] md:rounded-[32px] p-2 md:p-3 shadow-2xl">
+              <div className="w-full h-full bg-white rounded-[20px] md:rounded-[24px] overflow-hidden flex flex-col border border-gray-100 shadow-inner">
+                {/* Browser Header */}
+                <div className="h-12 bg-[#FDFCF8] border-b border-gray-100 flex items-center px-4 md:px-6 gap-4 shrink-0">
+                  <div className="flex gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="bg-white border border-gray-100 rounded-full px-8 py-1.5 text-[10px] text-gray-400 font-medium tracking-wide">
+                      app.kafiloo.com/dashboard
+                    </div>
+                  </div>
+                  <div className="w-10"></div>
                 </div>
-                <div className="w-32 md:w-64 h-2 md:h-3 bg-gray-100 rounded-full"></div>
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-[#1a1f36] to-gray-700 rounded-full shadow-md"></div>
-              </div>
-              {/* Fake UI Body */}
-              <div className="flex-1 flex gap-4 md:gap-8">
-                <div className="hidden md:flex w-1/4 h-full bg-gray-50/80 rounded-[24px] p-5 flex-col gap-5 border border-white">
-                   <div className="w-full h-10 bg-white shadow-sm rounded-xl"></div><div className="w-3/4 h-4 bg-gray-200 rounded-full"></div><div className="w-1/2 h-4 bg-gray-200 rounded-full"></div>
-                </div>
-                <div className="w-full md:w-3/4 h-full flex flex-col gap-4 md:gap-6">
-                   <div className="flex flex-col sm:flex-row gap-4 h-full md:h-auto">
-                     <div className="flex-1 h-full md:h-36 bg-white rounded-xl md:rounded-[24px] shadow-sm border border-gray-100 p-4 md:p-5 flex flex-col justify-end relative overflow-hidden">
-                       <div className="absolute top-4 right-4 w-8 h-8 md:w-12 md:h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 font-bold text-xs md:text-base">📈</div>
-                       <div className="w-1/2 h-3 md:h-5 bg-gray-200 rounded-full mb-2"></div><div className="w-1/3 h-5 md:h-8 bg-emerald-400 rounded-lg"></div>
+                
+                {/* App Body */}
+                <div className="flex-1 flex overflow-hidden bg-[#F8F9FA] text-[#1a1f36]">
+                  {/* Sidebar */}
+                  <div className="hidden md:flex w-64 bg-white border-r border-gray-100 p-6 flex-col shrink-0">
+                    <div className="flex items-center gap-3 mb-10">
+                       <div className="w-10 h-10 rounded-full bg-[#FCF3EA] flex items-center justify-center">
+                         <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
+                       </div>
+                       <div>
+                         <p className="font-black text-[14px] leading-tight">Kofilo</p>
+                         <p className="text-[9px] text-gray-400 font-bold tracking-widest uppercase">Workspace</p>
+                       </div>
+                    </div>
+                    <div className="flex flex-col gap-2 flex-1">
+                      <div className="h-11 w-full bg-white border-2 border-gray-800 shadow-sm rounded-xl flex items-center px-4 gap-3">
+                        <svg className="w-4 h-4 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                        <span className="font-bold text-[12px]">Dashboard</span>
+                      </div>
+                      <div className="h-10 w-full flex items-center px-4 gap-3 text-gray-400">
+                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                         <span className="font-medium text-[12px]">Menu Management</span>
+                      </div>
+                      <div className="h-10 w-full flex items-center px-4 gap-3 text-gray-400">
+                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                         <span className="font-medium text-[12px]">Report</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Main Content (Mockup Details) */}
+                  <div className="flex-1 p-6 md:p-8 flex flex-col gap-6 overflow-y-auto">
+                     <div className="flex justify-between items-start">
+                       <div>
+                         <h2 className="text-[22px] font-black mb-1">Welcome back, Alex</h2>
+                         <p className="text-gray-400 text-[12px]">Here's what's happening at your stores on this selected date.</p>
+                       </div>
                      </div>
-                     <div className="flex-1 h-full md:h-36 bg-white rounded-xl md:rounded-[24px] shadow-sm border border-gray-100 p-4 md:p-5 flex flex-col justify-end relative">
-                       <div className="absolute top-4 right-4 w-8 h-8 md:w-12 md:h-12 bg-blue-50 rounded-full"></div>
-                       <div className="w-2/3 h-3 md:h-5 bg-gray-200 rounded-full mb-2"></div><div className="w-1/2 h-5 md:h-8 bg-blue-400 rounded-lg"></div>
+                     {/* Stats Row */}
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div className="bg-white rounded-[20px] shadow-sm p-6 border border-gray-100">
+                          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-3">Gross Revenue</p>
+                          <h3 className="text-[28px] font-black text-[#1a1f36] mb-1">Rp 0</h3>
+                        </div>
+                        <div className="bg-white rounded-[20px] shadow-sm p-6 border border-gray-100">
+                          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-3">Completed Orders</p>
+                          <h3 className="text-[28px] font-black text-[#1a1f36] mb-1">0</h3>
+                        </div>
+                        <div className="bg-white rounded-[20px] shadow-sm p-6 border border-gray-100">
+                          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-3">Total Items Sold</p>
+                          <h3 className="text-[28px] font-black text-[#1a1f36] mb-1">0</h3>
+                        </div>
                      </div>
-                   </div>
-                   <div className="hidden sm:block flex-1 w-full bg-gradient-to-r from-[#6C4E31]/10 to-orange-50 rounded-[24px] border border-white p-6 relative overflow-hidden">
-                      <div className="w-1/3 h-6 bg-[#6C4E31]/20 rounded-full mb-4"></div>
-                      <div className="w-full h-24 bg-white/50 rounded-xl"></div>
-                   </div>
+                  </div>
                 </div>
               </div>
             </div>
-            {/* Background Glow Dashboard */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 bg-[#6C4E31]/20 blur-[150px] rounded-full z-0"></div>
           </div>
         </Reveal>
       </section>
 
       {/* ── KLIEN / INFINITE MARQUEE ── */}
-      <section className="py-12 bg-white border-y border-gray-100 overflow-hidden relative z-10">
-        <div className="max-w-7xl mx-auto px-6 text-center mb-6">
-          <p className="text-[13px] font-black text-gray-400 uppercase tracking-[0.2em]">Telah Digunakan Oleh Bisnis F&B Berkembang</p>
+      <section className="py-12 border-y border-gray-200/40 overflow-hidden relative z-10 bg-[#FAF2E6]">
+        <div className="max-w-7xl mx-auto px-6 text-center mb-10">
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.25em]">Dipercaya Oleh 500+ Kedai Kopi Indonesia</p>
         </div>
         <div className="flex w-full overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-16 md:gap-32 pl-16 md:pl-32 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-            {['Azalia Coffee', 'Els Koffie', 'BREW & BAKE', '/KopiLokal', 'DailyRoast.', 'Kopi Janji', 'Senja Cafe', 'Azalia Coffee', 'Els Koffie', 'BREW & BAKE', '/KopiLokal', 'DailyRoast.'].map((klien, i) => (
-              <h2 key={i} className={`text-[28px] font-black ${i%2===0 ? 'font-serif italic' : 'font-mono'} text-gray-800`}>{klien}</h2>
+          <div className="animate-marquee whitespace-nowrap flex items-center gap-16 md:gap-32 pl-16 md:pl-32 opacity-60 hover:opacity-100 transition-all duration-700">
+            {['DAILY ROAST', 'BREW & BAKE', 'CUP + CULTURE', 'BEANS LAB', 'ROASTERY', 'RUANG SEDUH', 'DAILY ROAST', 'BREW & BAKE', 'CUP + CULTURE', 'BEANS LAB', 'ROASTERY', 'RUANG SEDUH'].map((klien, i) => (
+              <h2 key={i} className="text-[14px] md:text-[18px] font-bold text-gray-400 tracking-[0.2em]">{klien}</h2>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── MANFAAT (KENAPA KOFILO) ── */}
-      <section id="manfaat" className="py-32 scroll-mt-20 relative">
+      {/* ── EKOSISTEM / FITUR GRID ── */}
+      <section id="fitur" className="pt-32 pb-16 scroll-mt-20 relative z-10 bg-[#FEFAF1]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <Reveal>
-            <div className="text-center mb-24 max-w-3xl mx-auto">
-              <h2 className="text-[36px] md:text-[52px] font-black tracking-tight mb-6 text-[#1a1f36]">Solusi Masalah Klasik Kafe Anda.</h2>
-              <p className="text-gray-500 font-medium text-[18px] leading-relaxed">Kami memahami rasa sakit antrean panjang, kasir salah input, dan pelanggan yang lupa kembali. Kofilo mengatasi itu semua.</p>
+            <div className="mb-16 max-w-3xl">
+               <div className="flex items-center gap-4 mb-6">
+                  <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
+                  <span className="text-[11px] font-bold text-[#E58B55] uppercase tracking-[0.25em]">Ekosistem</span>
+               </div>
+               <h2 className="text-[40px] md:text-[56px] font-bold tracking-tight mb-6 text-[#1a1f36]">
+                 Satu platform, <span className="italic font-normal">segala kendali.</span>
+               </h2>
+               <p className="text-gray-500 font-medium text-[16px] md:text-[18px] leading-relaxed max-w-xl">
+                 Setiap fitur dirancang untuk terasa tenang di jam sibuk — cepat saat dibutuhkan, tidak berisik saat tidak.
+               </p>
             </div>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <Reveal delay={100} direction="up" className="h-full">
-              <div className="bg-white rounded-[40px] p-10 shadow-[0_10px_30px_rgba(0,0,0,0.04)] border border-gray-100 text-center flex flex-col items-center hover:-translate-y-6 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)] transition-all duration-500 cursor-pointer h-full group">
-                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-4xl mb-8 shadow-inner group-hover:scale-110 transition-transform">⏱️</div>
-                <h3 className="text-[22px] font-black text-[#1a1f36] mb-4">Pangkas Antrean</h3>
-                <p className="text-gray-500 leading-relaxed text-[15px]">Pelanggan tak perlu berdiri di kasir. Mereka bisa pesan & bayar mandiri dari meja, kasir hanya perlu konfirmasi.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { tag: "REALTIME", num: "01", title: "Dashboard operasional", desc: "Pantau revenue, order, dan performa menu tiap outlet dalam satu layar tenang." },
+              { tag: "PWA", num: "02", title: "Self-order tanpa install", desc: "Pelanggan scan QR, pilih menu, dan bayar dalam hitungan detik dari browser." },
+              { tag: "LOYALTY", num: "03", title: "Program poin otomatis", desc: "Setiap transaksi menumbuhkan komunitas pelanggan setia Anda tanpa kerja manual." },
+              { tag: "INVENTORY", num: "04", title: "Stok yang jujur", desc: "Bahan berkurang otomatis setiap penjualan. Alert stok tipis sebelum kehabisan." },
+              { tag: "MULTI-OUTLET", num: "05", title: "Sinkron antar cabang", desc: "Menu, harga, dan promo diubah sekali — berlaku serentak di semua lokasi." },
+              { tag: "OFFLINE", num: "06", title: "Selalu jalan, kapanpun", desc: "Transaksi tetap berjalan tanpa internet dan sinkron otomatis saat online." }
+            ].map((item, index) => (
+              <Reveal key={index} delay={index * 100} direction="up" className="h-full">
+                <div className="bg-white rounded-[24px] p-8 md:p-10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 h-full flex flex-col group cursor-pointer">
+                  <div className="flex justify-between items-center mb-16">
+                    <span className="px-3 py-1 bg-[#FCFBF7] border border-gray-100 rounded-full text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] group-hover:border-orange-500/30 group-hover:text-orange-500 transition-colors">
+                      {item.tag}
+                    </span>
+                    <span className="text-[12px] font-bold text-gray-300 group-hover:text-gray-400 transition-colors">{item.num}</span>
+                  </div>
+                  <h3 className="text-[18px] md:text-[20px] font-bold text-[#1a1f36] mb-4">{item.title}</h3>
+                  <p className="text-gray-500 font-medium text-[15px] leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── IMPACT SECTION (BARU SESUAI GAMBAR) ── */}
+      <section id="impact" className="py-36 md:py-44 bg-[#FEFAF1] relative z-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            
+            {/* Left Content (Text & Button) */}
+            <Reveal delay={100} className="w-full lg:w-5/12">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
+                <span className="text-[11px] font-bold text-[#E58B55] uppercase tracking-[0.25em]">Impact</span>
+              </div>
+              <h2 className="text-[40px] md:text-[48px] lg:text-[56px] font-bold tracking-tight mb-6 text-[#1a1f36] leading-[1.1]">
+                Angka yang lahir dari <span className="italic font-normal">operasional yang rapi.</span>
+              </h2>
+              <p className="text-gray-500 font-medium text-[15px] md:text-[17px] leading-relaxed mb-10 max-w-lg">
+                Kafiloo memangkas gesekan di setiap titik — dari pesanan pertama hingga laporan akhir hari. Tim Anda punya waktu lebih untuk membuat kopi yang lebih baik.
+              </p>
+              <Link href="#" className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-gray-300 text-[14px] md:text-[15px] font-bold text-[#1a1f36] hover:bg-white hover:border-gray-400 transition-all group shadow-sm bg-transparent">
+                Baca studi kasus
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+              </Link>
+            </Reveal>
+
+            {/* Right Content (Cards Grid) */}
+            <Reveal delay={300} type="slide" direction="left" className="w-full lg:w-7/12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
+                {[
+                  { value: "40%", label: "kenaikan omset rata-rata" },
+                  { value: "30%", label: "turnover meja lebih cepat" },
+                  { value: "500+", label: "kedai aktif di Indonesia" },
+                  { value: "99.9%", label: "uptime layanan cloud" }
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white rounded-[24px] p-8 md:p-10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-center min-h-[180px]">
+                    <h3 className="text-[48px] md:text-[56px] font-medium text-[#1a1f36] tracking-tighter mb-1 md:mb-2 leading-none">{stat.value}</h3>
+                    <p className="text-gray-500 font-medium text-[14px] md:text-[15px]">{stat.label}</p>
+                  </div>
+                ))}
               </div>
             </Reveal>
 
-            <Reveal delay={200} direction="up" className="h-full">
-              <div className="bg-white rounded-[40px] p-10 shadow-[0_10px_30px_rgba(0,0,0,0.04)] border border-gray-100 text-center flex flex-col items-center hover:-translate-y-6 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)] transition-all duration-500 cursor-pointer h-full group">
-                <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mb-8 shadow-inner group-hover:scale-110 transition-transform">📈</div>
-                <h3 className="text-[22px] font-black text-[#1a1f36] mb-4">Tingkatkan Retensi</h3>
-                <p className="text-gray-500 leading-relaxed text-[15px]">Data membuktikan pelanggan dengan sistem loyalty points akan kembali 3x lebih sering ke kafe Anda.</p>
-              </div>
-            </Reveal>
-
-            <Reveal delay={300} direction="up" className="h-full">
-              <div className="bg-white rounded-[40px] p-10 shadow-[0_10px_30px_rgba(0,0,0,0.04)] border border-gray-100 text-center flex flex-col items-center hover:-translate-y-6 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)] transition-all duration-500 cursor-pointer h-full group">
-                <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-4xl mb-8 shadow-inner group-hover:scale-110 transition-transform">☁️</div>
-                <h3 className="text-[22px] font-black text-[#1a1f36] mb-4">Pantau Dari Rumah</h3>
-                <p className="text-gray-500 leading-relaxed text-[15px]">Sebagai Owner, Anda bisa mengatur pajak, mematikan menu kosong, dan melihat omset live dari HP Anda di mana saja.</p>
-              </div>
-            </Reveal>
           </div>
         </div>
       </section>
 
       {/* ── CARA KERJA (ALUR) ── */}
-      <section id="cara-kerja" className="py-32 bg-[#1a1f36] text-white relative overflow-hidden scroll-mt-10">
-        <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none"></div>
+      <section id="cara-kerja" className="py-32 bg-[#FEFAF1] text-[#1a1f36] relative overflow-hidden scroll-mt-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
           <Reveal>
             <div className="mb-20 text-center md:text-left">
-              <h2 className="text-[36px] md:text-[52px] font-black tracking-tight mb-6">Alur Kerja Tanpa Gesekan.</h2>
+              <h2 className="text-[36px] md:text-[52px] font-bold tracking-tight mb-6">Alur Kerja Tanpa Gesekan.</h2>
               <p className="text-gray-400 font-medium text-[18px] max-w-2xl mx-auto md:mx-0">Dari pelanggan duduk hingga hidangan tersaji, semuanya tersinkronisasi dalam hitungan detik.</p>
             </div>
           </Reveal>
 
           <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 relative">
-            <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-1 bg-gradient-to-r from-transparent via-[#6C4E31] to-transparent -translate-y-1/2 opacity-50"></div>
+            <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-transparent via-gray-600 to-transparent -translate-y-1/2 opacity-50"></div>
             
             <Reveal delay={100} className="flex-1 w-full">
-              <div className="bg-[#2a314d] rounded-[32px] p-10 border border-white/10 relative z-10 flex flex-col h-full hover:-translate-y-6 hover:shadow-[0_30px_60px_rgba(0,0,0,0.4)] transition-all duration-500 cursor-pointer group">
-                <div className="text-6xl mb-8 group-hover:scale-110 transition-transform origin-left">📱</div>
-                <h3 className="text-[24px] font-black mb-4 text-white">1. Scan & Pesan</h3>
+              <div className="bg-[#27272a] rounded-[32px] p-10 border border-white/5 relative z-10 flex flex-col h-full hover:-translate-y-4 transition-all duration-500 cursor-pointer group shadow-lg">
+                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform origin-left">📱</div>
+                <h3 className="text-[20px] font-bold mb-4 text-white">1. Scan & Pesan</h3>
                 <p className="text-gray-400 text-[15px] leading-relaxed">Pelanggan scan QR di meja menggunakan kamera HP, melihat menu digital interaktif, dan langsung checkout.</p>
               </div>
             </Reveal>
 
             <Reveal delay={300} className="flex-1 w-full">
-              <div className="bg-gradient-to-b from-[#6C4E31] to-[#4a3420] rounded-[32px] p-10 border border-amber-900/50 relative z-10 flex flex-col h-full md:-translate-y-6 hover:-translate-y-12 hover:shadow-[0_40px_80px_rgba(108,78,49,0.6)] transition-all duration-500 shadow-2xl cursor-pointer group">
-                <div className="text-6xl mb-8 group-hover:scale-110 transition-transform origin-left">💻</div>
-                <h3 className="text-[24px] font-black mb-4 text-white">2. Kasir Konfirmasi</h3>
-                <p className="text-amber-100/80 text-[15px] leading-relaxed">Pesanan masuk ke dasbor kasir diiringi bunyi notifikasi. Cukup klik "Terima", struk dapur otomatis tercetak.</p>
+              <div className="bg-gradient-to-b from-gray-800 to-[#18181b] rounded-[32px] p-10 border border-gray-600/50 relative z-10 flex flex-col h-full md:-translate-y-6 hover:-translate-y-10 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition-all duration-500 shadow-2xl cursor-pointer group">
+                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform origin-left">💻</div>
+                <h3 className="text-[20px] font-bold mb-4 text-white">2. Kasir Konfirmasi</h3>
+                <p className="text-gray-300 text-[15px] leading-relaxed">Pesanan masuk ke dasbor kasir diiringi bunyi notifikasi. Cukup klik "Terima", struk dapur otomatis tercetak.</p>
               </div>
             </Reveal>
 
             <Reveal delay={500} className="flex-1 w-full">
-              <div className="bg-[#2a314d] rounded-[32px] p-10 border border-white/10 relative z-10 flex flex-col h-full hover:-translate-y-6 hover:shadow-[0_30px_60px_rgba(0,0,0,0.4)] transition-all duration-500 cursor-pointer group">
-                <div className="text-6xl mb-8 group-hover:scale-110 transition-transform origin-left">🍳</div>
-                <h3 className="text-[24px] font-black mb-4 text-white">3. Dapur Menyiapkan</h3>
+              <div className="bg-[#27272a] rounded-[32px] p-10 border border-white/5 relative z-10 flex flex-col h-full hover:-translate-y-4 transition-all duration-500 cursor-pointer group shadow-lg">
+                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform origin-left">🍳</div>
+                <h3 className="text-[20px] font-bold mb-4 text-white">3. Dapur Menyiapkan</h3>
                 <p className="text-gray-400 text-[15px] leading-relaxed">Dapur membaca struk pesanan yang jelas tanpa salah baca tulisan tangan. Pesanan dihidangkan tepat waktu.</p>
               </div>
             </Reveal>
@@ -348,12 +404,12 @@ export default function KofiloLandingPage() {
         </div>
       </section>
 
-      {/* ── BENTO GRID MEGA FEATURES ── */}
-      <section id="fitur" className="py-32 max-w-7xl mx-auto px-6 lg:px-8 scroll-mt-20">
+      {/* ── BENTO GRID MEGA FEATURES (Opsional: Tetap dipertahankan untuk Showcase visual) ── */}
+      <section id="showcase" className="py-32 max-w-7xl mx-auto px-6 lg:px-8 scroll-mt-20">
         <Reveal>
           <div className="text-center mb-20 max-w-3xl mx-auto">
-            <h2 className="text-[36px] md:text-[48px] font-black tracking-tight mb-6 text-[#1a1f36]">Ekosistem Fitur Terlengkap.</h2>
-            <p className="text-gray-500 font-medium text-[18px] leading-relaxed">Satu aplikasi untuk menggantikan tiga sistem sekaligus. Kami membangun fitur skala Enterprise yang dibalut antarmuka yang simpel.</p>
+            <h2 className="text-[36px] md:text-[48px] font-bold tracking-tight mb-6 text-[#1a1f36]">Ekspansi Tanpa Batas.</h2>
+            <p className="text-gray-500 font-medium text-[18px] leading-relaxed">Visualisasi fitur unggulan kami. Menggantikan tiga sistem sekaligus dengan antarmuka yang modern dan responsif.</p>
           </div>
         </Reveal>
 
@@ -428,27 +484,25 @@ export default function KofiloLandingPage() {
       </section>
 
       {/* ── KOMPATIBILITAS DEVICE ── */}
-      <section className="py-32 bg-[#Fdfbf9] border-t border-gray-200">
+      <section className="py-32 bg-[#FEFAF1] border-t border-gray-200/50">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-16">
           <Reveal className="w-full md:w-1/2">
-            <h2 className="text-[36px] md:text-[52px] font-black tracking-tight mb-8 text-[#1a1f36] leading-[1.1]">Jalankan Kofilo di Perangkat Apapun.</h2>
+            <h2 className="text-[36px] md:text-[48px] font-bold tracking-tight mb-6 text-[#1a1f36] leading-[1.1]">Jalankan Kofilo di Perangkat Apapun.</h2>
             <p className="text-gray-500 text-[18px] mb-10 leading-relaxed">
               Anda tidak perlu membeli mesin kasir besar yang mahal. Kofilo berbasis web responsif penuh yang berjalan sangat mulus di iPad, Tablet Android, Laptop, maupun HP kasir Anda.
             </p>
             <div className="flex gap-6">
-               <div className="flex flex-col items-center gap-3"><div className="w-20 h-20 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-3xl">📱</div><span className="text-[14px] font-bold text-[#1a1f36]">Mobile</span></div>
-               <div className="flex flex-col items-center gap-3"><div className="w-20 h-20 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-3xl">📟</div><span className="text-[14px] font-bold text-[#1a1f36]">Tablet</span></div>
-               <div className="flex flex-col items-center gap-3"><div className="w-20 h-20 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-3xl">💻</div><span className="text-[14px] font-bold text-[#1a1f36]">Desktop</span></div>
+               <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-2xl">📱</div><span className="text-[13px] font-bold text-gray-500">Mobile</span></div>
+               <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-2xl">📟</div><span className="text-[13px] font-bold text-gray-500">Tablet</span></div>
+               <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-2xl">💻</div><span className="text-[13px] font-bold text-gray-500">Desktop</span></div>
             </div>
           </Reveal>
-          <Reveal delay={200} className="w-full md:w-1/2 w-full">
-            <div className="w-full aspect-[4/3] bg-gradient-to-tr from-gray-200 to-white rounded-[48px] shadow-inner border-[4px] border-white flex items-center justify-center p-10 relative">
-               {/* Abstract iPad Mockup */}
-               <div className="w-full h-full bg-black rounded-[32px] border-[12px] border-gray-800 shadow-2xl relative overflow-hidden flex shadow-[0_40px_80px_rgba(0,0,0,0.4)]">
-                  {/* iPad Screen */}
-                  <div className="w-1/4 h-full bg-[#1a1f36] border-r border-gray-800 p-5"><div className="w-10 h-10 rounded-xl bg-[#6C4E31] mb-8"></div><div className="w-full h-5 bg-gray-800 rounded-md mb-5"></div><div className="w-3/4 h-5 bg-gray-800 rounded-md mb-5"></div></div>
-                  <div className="w-3/4 h-full bg-gray-50 p-8 flex flex-wrap gap-5 content-start">
-                     <div className="w-[30%] h-28 bg-white rounded-2xl shadow-sm border border-gray-200"></div><div className="w-[30%] h-28 bg-white rounded-2xl shadow-sm border border-gray-200"></div><div className="w-[30%] h-28 bg-white rounded-2xl shadow-sm border border-gray-200"></div>
+          <Reveal delay={200} className="w-full md:w-1/2">
+            <div className="w-full aspect-[4/3] bg-gray-100 rounded-[40px] shadow-inner border-[8px] border-white flex items-center justify-center p-8 relative overflow-hidden">
+               <div className="w-full h-full bg-[#18181b] rounded-[24px] shadow-2xl relative overflow-hidden flex shadow-[0_20px_40px_rgba(0,0,0,0.2)] border border-gray-700">
+                  <div className="w-1/4 h-full bg-[#27272a] border-r border-gray-700 p-5"><div className="w-8 h-8 rounded-lg bg-gray-600 mb-6"></div><div className="w-full h-4 bg-gray-700 rounded mb-4"></div><div className="w-3/4 h-4 bg-gray-700 rounded mb-4"></div></div>
+                  <div className="w-3/4 h-full bg-gray-50 p-6 flex flex-wrap gap-4 content-start">
+                     <div className="w-[30%] h-24 bg-white rounded-xl shadow-sm border border-gray-200"></div><div className="w-[30%] h-24 bg-white rounded-xl shadow-sm border border-gray-200"></div><div className="w-[30%] h-24 bg-white rounded-xl shadow-sm border border-gray-200"></div>
                   </div>
                </div>
             </div>
@@ -456,182 +510,357 @@ export default function KofiloLandingPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIAL ── */}
-      <section id="testimoni" className="relative py-32 bg-[#1a1f36] text-white overflow-hidden scroll-mt-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[600px] bg-gradient-to-r from-[#6C4E31]/30 to-transparent blur-[150px] rounded-full animate-pulse pointer-events-none"></div>
-        <Reveal type="scale" className="w-full">
-          <div className="max-w-5xl mx-auto px-6 text-center relative z-10 w-full">
-            <h2 className="text-[14px] font-black mb-12 uppercase tracking-[0.3em] text-[#d4a373]">Review Klien Nyata</h2>
-            <div className="glass-dark rounded-[48px] p-10 md:p-20 border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.4)] relative hover:-translate-y-4 hover:shadow-[0_50px_120px_rgba(0,0,0,0.6)] transition-all duration-500 w-full">
-              <span className="absolute -top-6 left-12 text-[150px] opacity-20 font-serif leading-none">"</span>
-              <p className="text-[24px] md:text-[36px] font-medium leading-[1.4] mb-12 relative z-10">
-                "Sebelumnya antrean selalu mengular di akhir pekan. Sejak pakai PWA Kofilo, pelanggan bisa langsung pesan dari meja. Omset naik 40% dan pelanggan makin loyal karena tukar poin sangat mudah!"
-              </p>
-              <div className="flex items-center justify-center gap-6">
-                <img src="https://ui-avatars.com/api/?name=Faid+N&background=6C4E31&color=fff&size=128" alt="Owner" className="w-20 h-20 rounded-full object-cover border-4 border-[#1a1f36] shadow-lg" />
-                <div className="text-left">
-                  <p className="font-black text-[22px]">Faid Naziih</p>
-                  <p className="text-[16px] text-gray-400 mt-0.5">Owner Els Koffie</p>
+      {/* ── TESTIMONIAL / REVIEW (BARU) ── */}
+      <section id="review" className="relative py-32 bg-[#FEFAF1] text-[#1a1f36] overflow-hidden scroll-mt-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+          <Reveal>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
+              <div>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
+                  <span className="text-[11px] font-bold text-[#E58B55] uppercase tracking-[0.25em]">SUARA PENGGUNA</span>
                 </div>
+                <h2 className="text-[36px] md:text-[52px] font-bold tracking-tight text-[#1a1f36] leading-[1.1]">
+                  Dipakai harian oleh <span className="italic font-normal text-gray-500">tim yang teliti.</span>
+                </h2>
+              </div>
+              <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100">
+                <div className="flex gap-1 text-[#E58B55] text-[16px]">
+                  <span>★</span><span>★</span><span>★</span><span>★</span><span className="text-gray-200">★</span>
+                </div>
+                <span className="text-[14px] font-bold text-[#1a1f36]">4.0 / 5.0</span>
+                <span className="text-[12px] text-gray-400 font-medium">· 320+ review</span>
               </div>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+        </div>
+
+        {/* Carousel Container */}
+        <div className="relative max-w-[1400px] mx-auto">
+          {/* Gradient Edges untuk efek fade di ujung kiri & kanan */}
+          <div className="absolute top-0 left-0 w-12 md:w-32 h-full bg-gradient-to-r from-[#FCFBF7] to-transparent pointer-events-none z-10"></div>
+          <div className="absolute top-0 right-0 w-12 md:w-32 h-full bg-gradient-to-l from-[#FCFBF7] to-transparent pointer-events-none z-10"></div>
+          
+          <Reveal delay={200} type="slide" direction="right">
+            {/* Class penyembunyi scrollbar standar Tailwind ada di sini */}
+            <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory px-6 md:px-32 pb-12 pt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              
+              {[
+                { name: "Rizky K.", role: "Owner, Kopi Sanggar", initial: "RK", quote: "Sangat premium, mudah dimengerti dari pertama lihat." },
+                { name: "Nadia P.", role: "Barista Lead, Beans Lab", initial: "NP", quote: "Visualnya bersih dan modern, terasa lebih terpercaya." },
+                { name: "Farhan M.", role: "Owner, Daily Roast", initial: "FM", quote: "Navigasinya enak dan keseluruhan tampilannya lebih engaging." },
+                { name: "Sinta W.", role: "Owner, Brew & Bake", initial: "SW", quote: "Detail kecilnya rapi, terasa dibuat oleh orang yang paham operasional." }
+              ].map((review, i) => (
+                <div key={i} className="min-w-[300px] md:min-w-[360px] bg-white rounded-[24px] p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 snap-center flex flex-col hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300">
+                  <div className="flex gap-1 text-[#E58B55] text-[18px] mb-6">
+                    <span>★</span><span>★</span><span>★</span><span>★</span><span className="text-gray-200">★</span>
+                  </div>
+                  <p className="text-gray-600 text-[15px] leading-relaxed mb-8 flex-1">
+                    "{review.quote}"
+                  </p>
+                  <div className="border-t border-gray-100 pt-6 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#1a1f36] text-white flex items-center justify-center text-[12px] font-bold">
+                      {review.initial}
+                    </div>
+                    <div>
+                      <p className="font-bold text-[14px] text-[#1a1f36]">{review.name}</p>
+                      <p className="text-[12px] text-gray-400">{review.role}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ── PRICING SECTION ── */}
       <section id="harga" className="py-40 max-w-7xl mx-auto px-6 lg:px-8 scroll-mt-20 relative">
         <Reveal>
-          <div className="text-center mb-24 max-w-3xl mx-auto">
-            <h2 className="text-[36px] md:text-[52px] font-black tracking-tight mb-6 text-[#1a1f36]">Investasi Terbaik Kafe Anda.</h2>
-            <p className="text-gray-500 font-medium text-[18px] leading-relaxed">Sistem Enterprise tanpa harga Enterprise. Pilih paket sesuai kebutuhan — mulai Rp350rb/bulan. Upgrade ke Pro saat Anda siap meroket.</p>
+          <div className="text-center mb-20 max-w-3xl mx-auto">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
+              <span className="text-[11px] font-bold text-[#E58B55] uppercase tracking-[0.25em]">PRICING</span>
+              <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
+            </div>
+            <h2 className="text-[36px] md:text-[52px] font-bold tracking-tight mb-6 text-[#1a1f36]">
+              Harga yang jujur, <span className="italic font-normal">skala sesuai bisnis.</span>
+            </h2>
+            <p className="text-gray-500 font-medium text-[16px] md:text-[18px] leading-relaxed">
+              Pilih paket yang cocok dengan tahap bisnismu. Semua paket bisa di-upgrade kapan saja, tanpa migrasi ulang.
+            </p>
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
           
-          {/* Starter Plan */}
+          {/* ── CARD 1: STARTER ── */}
           <Reveal delay={100} direction="right" className="h-full w-full">
-            <div className="bg-white border border-gray-200 rounded-[48px] p-12 shadow-[0_15px_40px_rgba(0,0,0,0.05)] hover:-translate-y-6 hover:shadow-[0_40px_80px_rgba(0,0,0,0.12)] transition-all duration-500 h-full flex flex-col group cursor-pointer w-full">
-              <h3 className="text-[28px] font-black text-[#1a1f36] mb-3">Starter</h3>
-              <p className="text-gray-500 text-[16px] font-medium mb-10">Sempurna untuk kafe yang baru merintis bisnis.</p>
-              <div className="mb-12 flex items-start">
-                <span className="text-[#1a1f36] font-bold text-3xl mt-2 mr-2">Rp</span>
-                <span className="text-[64px] font-black text-[#1a1f36] tracking-tighter">350<span className="text-[36px] text-gray-400 tracking-normal">.000</span></span>
-                <span className="text-gray-500 font-medium self-end mb-4 ml-2">/ bulan</span>
+            <div className="bg-[#FAF8F5] border border-gray-200/80 rounded-[32px] p-8 md:p-10 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col justify-between w-full">
+              <div>
+                <h3 className="text-[24px] font-bold text-[#1a1f36] mb-2">Starter</h3>
+                <p className="text-gray-500 text-[14px] mb-8">Bisnis dasar atau 1 outlet</p>
+                
+                <div className="mb-6">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">MULAI DARI</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[32px] md:text-[38px] font-bold text-[#1a1f36] tracking-tight">Rp 350.000</span>
+                    <span className="text-gray-500 text-[14px]">/ bulan</span>
+                  </div>
+                  <p className="text-gray-500 text-[13px] mt-2 leading-relaxed">Solusi POS esensial untuk operasional harian yang rapi dan efisien.</p>
+                </div>
+
+                <div className="w-full h-[1px] bg-gray-200/60 my-6"></div>
+
+                <ul className="space-y-3.5 mb-8 text-[14px] font-medium text-gray-600">
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Transaksi penjualan
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Manajemen produk & stok dasar
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Struk thermal standar
+                  </li>
+                  <li className="flex items-center gap-3 text-gray-400">
+                    <span className="text-gray-300 font-bold">−</span> Tanpa Fitur PWA (QR Order)
+                  </li>
+                  <li className="flex items-center gap-3 text-gray-400">
+                    <span className="text-gray-300 font-bold">−</span> Tanpa Loyalty Hub Otomatis
+                  </li>
+                </ul>
               </div>
-              <ul className="space-y-6 mb-12 text-[16px] font-medium text-gray-600 flex-1">
-                {['1 Akses Kasir Utama (Admin)', 'Manajemen Menu & Stok Dasar', 'Struk Thermal Standar'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-4"><svg className="w-7 h-7 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> {item}</li>
-                ))}
-                {['Tanpa Fitur PWA (QR Order)', 'Tanpa Loyalty Hub Otomatis'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-4 text-gray-400 opacity-60"><svg className="w-7 h-7 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg> {item}</li>
-                ))}
-              </ul>
-              <Link href="/landingpage/checkout?plan=starter" className="block w-full py-5 text-center rounded-full bg-gray-50 text-[#1a1f36] font-extrabold text-[18px] border border-gray-200 group-hover:bg-[#1a1f36] group-hover:text-white transition-all duration-300">
-                Buy Starter — Rp350.000
+
+              <Link href="/landingpage/checkout?plan=starter" className="block w-full py-4 text-center rounded-full bg-[#F3EFEA] hover:bg-[#1a1f36] hover:text-white text-[#1a1f36] font-bold text-[15px] transition-all duration-300 border border-gray-200/60">
+                Mulai Starter →
               </Link>
             </div>
           </Reveal>
 
-          {/* Pro Plan */}
-          <Reveal delay={300} direction="left" className="h-full w-full">
-            <div className="relative h-full w-full rounded-[48px] p-[2px] bg-gradient-to-b from-[#6C4E31] via-[#d4a373] to-[#1a1f36] shadow-[0_30px_60px_rgba(108,78,49,0.3)] md:-mt-8 md:mb-8 group cursor-pointer hover:-translate-y-6 hover:shadow-[0_50px_100px_rgba(108,78,49,0.5)] transition-all duration-500 z-20 md:scale-105">
-              <div className="absolute top-8 right-8 bg-gradient-to-r from-[#d4a373] to-[#6C4E31] text-white text-[13px] font-black uppercase tracking-[0.1em] px-5 py-2 rounded-full shadow-lg z-30">Paling Laris</div>
-              
-              <div className="bg-[#1a1f36] rounded-[46px] p-12 h-full flex flex-col relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-[#6C4E31] blur-[150px] rounded-full opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none"></div>
-                <h3 className="text-[28px] font-black text-white mb-3 relative z-10">Kofilo Pro</h3>
-                <p className="text-gray-400 text-[16px] font-medium mb-10 relative z-10">Otomatisasi penuh untuk kafe yang sangat ramai.</p>
-                <div className="mb-12 relative z-10 flex items-start">
-                  <span className="text-gray-400 font-bold text-3xl mt-2 mr-2">Rp</span>
-                  <span className="text-[64px] font-black text-white tracking-tighter">500<span className="text-[36px] text-gray-400 tracking-normal">.000</span></span>
-                  <span className="text-gray-400 font-medium self-end mb-4 ml-2">/ bulan</span>
-                </div>
-                <ul className="space-y-6 mb-12 text-[16px] font-medium text-gray-300 flex-1 relative z-10">
-                  {['Semua kehebatan Starter', 'PWA QR Ordering (Self-Order)', 'Loyalty Hub & Poin Otomatis', 'Akses Multi-User (Super Admin)', 'Kustomisasi Struk Lengkap', 'Prioritas Support 24/7'].map((item, i) => (
-                    <li key={i} className="flex items-center gap-4 text-white"><svg className="w-7 h-7 text-[#d4a373] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> <strong>{item}</strong></li>
-                  ))}
-                </ul>
-                <Link href="/landingpage/checkout?plan=pro" className="block w-full py-5 text-center rounded-full bg-gradient-to-r from-[#6C4E31] to-[#583f27] text-white font-black text-[18px] shadow-[0_10px_20px_rgba(108,78,49,0.4)] group-hover:shadow-[0_15px_30px_rgba(108,78,49,0.6)] group-hover:scale-[1.03] transition-all duration-300 relative z-10">
-                  Buy Kofilo Pro — Rp500.000
-                </Link>
+          {/* ── CARD 2: PRO (MOST POPULAR) ── */}
+          <Reveal delay={200} direction="up" className="h-full w-full">
+            <div className="relative bg-[#FAF8F5] border-2 border-[#1a1f36]/20 rounded-[32px] p-8 md:p-10 shadow-xl transition-all duration-500 h-full flex flex-col justify-between w-full md:-translate-y-4">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#1a1f36] text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-md">
+                ✦ MOST POPULAR
               </div>
+
+              <div>
+                <h3 className="text-[24px] font-bold text-[#1a1f36] mb-2">Pro</h3>
+                <p className="text-gray-500 text-[14px] mb-8">Bisnis yang sudah ramai dan sering antre</p>
+                
+                <div className="mb-6">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">MULAI DARI</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[32px] md:text-[38px] font-bold text-[#1a1f36] tracking-tight">Rp 500.000</span>
+                    <span className="text-gray-500 text-[14px]">/ bulan</span>
+                  </div>
+                  <p className="text-gray-500 text-[13px] mt-2 leading-relaxed">Paket lengkap untuk bisnis yang berkembang dan butuh loyalitas pelanggan & kontrol stok.</p>
+                </div>
+
+                <div className="w-full h-[1px] bg-gray-200/60 my-6"></div>
+
+                <ul className="space-y-3.5 mb-8 text-[14px] font-medium text-gray-700">
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Semua fitur Starter
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> PWA QR Ordering (Self-Order)
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Loyalty Hub & Poin Otomatis
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Akses Multi-User (Super Admin)
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Kustomisasi Struk Lengkap
+                  </li>
+                </ul>
+              </div>
+
+              <Link href="/landingpage/checkout?plan=pro" className="block w-full py-4 text-center rounded-full bg-[#1a1f36] text-white font-bold text-[15px] hover:bg-black transition-all duration-300 shadow-lg">
+                Pilih Pro →
+              </Link>
             </div>
           </Reveal>
+
+          {/* ── CARD 3: ENTERPRISE ── */}
+          <Reveal delay={300} direction="left" className="h-full w-full">
+            <div className="bg-[#FAF8F5] border border-gray-200/80 rounded-[32px] p-8 md:p-10 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col justify-between w-full">
+              <div>
+                <h3 className="text-[24px] font-bold text-[#1a1f36] mb-2">Enterprise</h3>
+                <p className="text-gray-500 text-[14px] mb-8">Banyak outlet atau kebutuhan khusus</p>
+                
+                <div className="mb-6">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">HARGA</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[32px] md:text-[38px] font-bold text-[#1a1f36] tracking-tight">Custom</span>
+                  </div>
+                  <p className="text-gray-500 text-[13px] mt-2 leading-relaxed">Solusi fleksibel untuk bisnis multi outlet dan kebutuhan operasional yang lebih kompleks.</p>
+                </div>
+
+                <div className="w-full h-[1px] bg-gray-200/60 my-6"></div>
+
+                <ul className="space-y-3.5 mb-8 text-[14px] font-medium text-gray-600">
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Semua fitur Pro
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Multi store tanpa batas
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Custom fitur sesuai kebutuhan
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-emerald-600 font-bold">✓</span> Support prioritas tinggi 24/7
+                  </li>
+                </ul>
+              </div>
+
+              <a href="https://wa.me/6285799854015?text=Halo%20Tim%20Kofilo,%20saya%20tertarik%20dengan%20paket%20Enterprise%20Custom." target="_blank" rel="noopener noreferrer" className="block w-full py-4 text-center rounded-full bg-[#F3EFEA] hover:bg-[#1a1f36] hover:text-white text-[#1a1f36] font-bold text-[15px] transition-all duration-300 border border-gray-200/60">
+                Konsultasi Sekarang →
+              </a>
+            </div>
+          </Reveal>
+
         </div>
       </section>
 
       {/* ── FAQ SECTION ── */}
-      <section id="faq" className="py-32 bg-white border-t border-gray-200 scroll-mt-10 relative">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
-          <Reveal>
-            <div className="text-center mb-16">
-               <h2 className="text-[36px] md:text-[48px] font-black mb-6 text-[#1a1f36] tracking-tight">Pertanyaan Seputar Kofilo</h2>
-               <p className="text-gray-500 font-medium text-[18px] max-w-2xl mx-auto">Masih ragu? Berikut jawaban untuk pertanyaan yang paling sering diajukan oleh calon klien kami.</p>
+      <section id="faq" className="py-32 bg-[#FEFAF1] scroll-mt-10 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
+          
+          {/* Kolom Kiri: Judul & Keterangan */}
+          <Reveal className="w-full lg:w-5/12 lg:sticky lg:top-32">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
+              <span className="text-[11px] font-bold text-[#E58B55] uppercase tracking-[0.25em]">FAQ</span>
             </div>
+            <h2 className="text-[40px] md:text-[52px] font-bold tracking-tight mb-6 text-[#1a1f36] leading-[1.1]">
+              Pertanyaan yang <span className="italic font-normal">sering muncul.</span>
+            </h2>
+            <p className="text-gray-500 font-medium text-[16px] md:text-[18px] leading-relaxed max-w-sm">
+              Belum ketemu jawabannya? Tim kami siap membantu via email atau WhatsApp.
+            </p>
           </Reveal>
-          <div className="space-y-6">
-            {faqs.map((faq, index) => (
-              <Reveal key={index} delay={index * 100} direction="up" className="w-full">
-                <div className="bg-gray-50 border border-gray-200 rounded-[32px] overflow-hidden hover:bg-white hover:shadow-[0_15px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 cursor-pointer" onClick={() => setOpenFaq(openFaq === index ? null : index)}>
-                  <div className="w-full text-left p-8 flex justify-between items-center focus:outline-none">
-                    <span className="font-bold text-[18px] text-[#1a1f36] pr-8">{faq.q}</span>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-500 ${openFaq === index ? 'bg-[#6C4E31] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-500 shadow-sm'}`}>
-                       <svg className={`w-6 h-6 transform transition-transform duration-500 ${openFaq === index ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+
+          {/* Kolom Kanan: Accordion Container */}
+          <Reveal delay={200} type="slide" direction="up" className="w-full lg:w-7/12">
+            <div className="bg-white rounded-[32px] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 overflow-hidden flex flex-col">
+              {faqs.map((faq, index) => (
+                <div key={index} className="border-b border-gray-100 last:border-b-0 w-full group">
+                  <div 
+                    className="w-full text-left p-6 md:p-8 flex justify-between items-center focus:outline-none cursor-pointer hover:bg-gray-50/50 transition-colors" 
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  >
+                    <span className="font-bold text-[16px] md:text-[17px] text-[#1a1f36] pr-8">{faq.q}</span>
+                    
+                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${openFaq === index ? 'bg-[#18181b] text-white' : 'bg-transparent text-gray-400 group-hover:text-[#1a1f36]'}`}>
+                      {openFaq === index ? (
+                        /* Ikon Silang (X) saat terbuka */
+                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      ) : (
+                        /* Ikon Tambah (+) saat tertutup */
+                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      )}
                     </div>
                   </div>
-                  <div className={`px-8 overflow-hidden transition-all duration-500 ease-in-out ${openFaq === index ? 'max-h-60 pb-8 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <p className="text-gray-500 text-[16px] leading-relaxed border-t border-gray-200 pt-6">{faq.a}</p>
+                  
+                  <div className={`px-6 md:px-8 overflow-hidden transition-all duration-500 ease-in-out ${openFaq === index ? 'max-h-96 pb-8 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <p className="text-gray-500 text-[15px] leading-relaxed">{faq.a}</p>
                   </div>
                 </div>
-              </Reveal>
-            ))}
-          </div>
+              ))}
+            </div>
+          </Reveal>
+          
         </div>
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="py-40 max-w-7xl mx-auto px-6 text-center border-t border-gray-100 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-50/80 via-transparent to-transparent -z-10"></div>
+      <section className="py-24 max-w-7xl mx-auto px-6 lg:px-8 relative overflow-hidden z-10">
         <Reveal type="scale" className="w-full">
-          <h2 className="text-[44px] md:text-[72px] font-black tracking-tighter text-[#1a1f36] mb-8">Siap Meroketkan Omset Anda?</h2>
-          <p className="text-gray-500 font-medium text-[20px] md:text-[24px] max-w-3xl mx-auto mb-14 leading-relaxed">Tinggalkan sistem lama yang membuat kasir Anda pusing. Beralih ke Kofilo hari ini dan nikmati kecanggihan ekosistem bisnis F&B masa depan.</p>
-          <Link href="/landingpage/checkout?plan=starter" className="inline-flex items-center gap-3 bg-[#1a1f36] text-white px-14 py-6 rounded-full text-[20px] font-black shadow-[0_15px_40px_-10px_rgba(26,31,54,0.6)] hover:bg-[#6C4E31] hover:-translate-y-2 hover:shadow-[0_25px_50px_-10px_rgba(108,78,49,0.7)] transition-all duration-500 group">
-            Buy Paket Kofilo Sekarang
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-          </Link>
+          <div className="bg-[#120d09] rounded-[40px] py-24 px-6 md:px-16 text-center relative overflow-hidden shadow-2xl border border-[#3b2716]/40">
+            
+            {/* Ambient Glows (Efek Nyala) */}
+            {/* Cahaya di KIRI (Baru ditambahkan) */}
+            <div className="absolute -bottom-40 -left-20 md:-left-40 w-[600px] h-[600px] bg-[#8B5024]/40 blur-[130px] rounded-full pointer-events-none animate-[pulse_5s_ease-in-out_infinite] delay-1000"></div>
+
+            {/* Cahaya di KANAN atas */}
+            <div className="absolute -top-40 -right-20 md:-right-40 w-[600px] h-[600px] bg-[#8B5024]/40 blur-[130px] rounded-full pointer-events-none animate-pulse"></div>
+            
+            {/* Cahaya berkedip halus di TENGAH belakang teks */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#E58B55]/15 blur-[120px] rounded-full pointer-events-none animate-[pulse_4s_ease-in-out_infinite]"></div>
+
+            <h2 className="text-[36px] md:text-[56px] font-bold tracking-tight text-white mb-6 leading-[1.15] relative z-10">
+              Siap membuat operasional <br className="hidden md:block"/>
+              kedai <br className="hidden md:block"/>
+              terasa <span className="italic font-normal text-[#E58B55] drop-shadow-[0_0_15px_rgba(229,139,85,0.4)]">refined?</span>
+            </h2>
+            
+            <p className="text-[#d4bca8] font-medium text-[16px] md:text-[18px] max-w-2xl mx-auto mb-10 leading-relaxed relative z-10">
+              Coba Kafiloo gratis 14 hari. Tanpa kartu kredit, tanpa komitmen.
+            </p>
+            
+            <div className="flex justify-center relative z-10">
+              <Link href="/landingpage/checkout?plan=starter" className="inline-flex items-center gap-3 bg-white text-[#1a1f36] px-8 py-3.5 rounded-full text-[15px] font-bold hover:bg-gray-100 hover:-translate-y-1 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] group">
+                Mulai Sekarang
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+              </Link>
+            </div>
+          </div>
         </Reveal>
       </section>
 
-      {/* ── SUPER FOOTER ── */}
-      <footer className="bg-[#1a1f36] text-white pt-24 pb-10 relative z-10 rounded-t-[50px] md:rounded-t-[80px]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
+      {/* ── FOOTER ── */}
+      <footer className="bg-[#18181b] text-white pt-20 pb-10 relative z-10 rounded-t-[40px] md:rounded-t-[60px]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="md:col-span-2">
-            <div className="flex items-center gap-4 mb-8">
-              {/* 🔥 UBAHAN: Footer Logo Dinamis */}
+            <div className="flex items-center gap-3 mb-6">
               {storeInfo.logo ? (
-                <img src={storeInfo.logo} alt="Logo" className="w-12 h-12 rounded-[16px] object-cover bg-white shadow-[0_10px_20px_rgba(108,78,49,0.5)]" />
+                <img src={storeInfo.logo} alt="Logo" className="w-10 h-10 rounded-full object-cover bg-white" />
               ) : (
-                <div className="w-12 h-12 rounded-[16px] bg-gradient-to-br from-[#6C4E31] to-[#583f27] flex items-center justify-center text-white text-2xl font-black shadow-[0_10px_20px_rgba(108,78,49,0.5)]">{storeInitial}</div>
+                <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-xl font-bold border border-gray-700">{storeInitial}</div>
               )}
-              <span className="font-black text-[32px] tracking-tight">{storeInfo.name}.</span>
+              <span className="font-bold text-[24px] tracking-tight">{storeInfo.name}.</span>
             </div>
-            <p className="text-gray-400 text-[16px] max-w-sm leading-relaxed">Sistem POS & Loyalty Hub modern yang didesain khusus untuk melipatgandakan retensi pelanggan dan omset bisnis F&B Anda secara otomatis.</p>
+            <p className="text-gray-400 text-[15px] max-w-sm leading-relaxed">Platform kasir & operasional premium untuk kedai kopi dan restoran modern. Cepat, tenang, dan dapat diandalkan.</p>
           </div>
           <div>
-            <h4 className="font-black text-[18px] mb-8 text-white">Produk {storeInfo.name}</h4>
-            <ul className="space-y-5 text-gray-400 text-[15px] font-medium">
-              <li><a href="#fitur" className="hover:text-white hover:translate-x-1 inline-block transition-all">PWA Ordering App</a></li>
-              <li><a href="#fitur" className="hover:text-white hover:translate-x-1 inline-block transition-all">Loyalty Reward System</a></li>
-              <li><a href="#fitur" className="hover:text-white hover:translate-x-1 inline-block transition-all">Cloud Admin Dashboard</a></li>
-              <li><a href="#harga" className="hover:text-white hover:translate-x-1 inline-block transition-all">Harga & Paket</a></li>
+            <h4 className="font-bold text-[16px] mb-6 text-white">Produk</h4>
+            <ul className="space-y-4 text-gray-400 text-[14px] font-medium">
+              <li><a href="#fitur" className="hover:text-white transition-colors">PWA Ordering App</a></li>
+              <li><a href="#fitur" className="hover:text-white transition-colors">Loyalty System</a></li>
+              <li><a href="#fitur" className="hover:text-white transition-colors">Cloud Dashboard</a></li>
+              <li><a href="#harga" className="hover:text-white transition-colors">Harga & Paket</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-black text-[18px] mb-8 text-white">Bantuan & Info</h4>
-            <ul className="space-y-5 text-gray-400 text-[15px] font-medium">
-              <li><a href="#faq" className="hover:text-white hover:translate-x-1 inline-block transition-all">Pusat Bantuan (FAQ)</a></li>
+            <h4 className="font-bold text-[16px] mb-6 text-white">Bantuan</h4>
+            <ul className="space-y-4 text-gray-400 text-[14px] font-medium">
+              <li><a href="#faq" className="hover:text-white transition-colors">Pusat Bantuan (FAQ)</a></li>
               <li>
-                <a 
-                  href="https://wa.me/6285799854015?text=Halo%20Tim%20Sales%20Kofilo,%20saya%20ingin%20bertanya%20mengenai%20paket%20sistem%20POS%20dan%20Loyalty." 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-white hover:translate-x-1 inline-block transition-all"
-                >
-                  Hubungi Tim Sales
+                <a href="https://wa.me/6285799854015?text=Halo%20Tim%20Sales%20Kofilo,%20saya%20ingin%20bertanya..." target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  Hubungi Sales
                 </a>
               </li>
-              <li><a href="/landingpage/syarat-ketentuan" className="hover:text-white hover:translate-x-1 inline-block transition-all">Syarat & Ketentuan</a></li>
-              <li><a href="/landingpage/kebijakan-privasi" className="hover:text-white hover:translate-x-1 inline-block transition-all">Kebijakan Privasi</a></li>
+              <li><a href="/landingpage/syarat-ketentuan" className="hover:text-white transition-colors">Syarat & Ketentuan</a></li>
+              <li><a href="/landingpage/kebijakan-privasi" className="hover:text-white transition-colors">Kebijakan Privasi</a></li>
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 border-t border-white/10 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[14px] text-gray-500 font-medium">© {new Date().getFullYear()} {storeInfo.name} Software F&B. Seluruh Hak Cipta Dilindungi.</p>
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-[13px] text-gray-500 font-medium">© {new Date().getFullYear()} {storeInfo.name}. Seluruh Hak Cipta Dilindungi.</p>
           <div className="flex gap-4">
-            <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#6C4E31] hover:border-transparent hover:-translate-y-1 transition-all shadow-sm">IG</a>
-            <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#6C4E31] hover:border-transparent hover:-translate-y-1 transition-all shadow-sm">X</a>
+            <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-all">IG</a>
+            <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-all">X</a>
           </div>
         </div>
       </footer>
