@@ -10,7 +10,6 @@
 
 import { useEffect } from "react";
 import { useCheckoutStore } from "@/stores/checkout-store";
-import PakasirMethodPicker from "@/components/customer/PakasirMethodPicker";
 import PakasirPaymentView from "@/components/customer/PakasirPaymentView";
 
 interface Props {
@@ -22,36 +21,32 @@ interface Props {
 }
 
 export default function PakasirCheckoutPanel({ amount, pwaOrderId, onPaid }: Props) {
-  const { method, setMethod, fees, feesLoading, loadFees, createPayment, status, payment } =
+  const { createPayment, status, payment } =
     useCheckoutStore();
 
   useEffect(() => {
-    if (amount > 0) void loadFees(amount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amount]);
+    if (!pwaOrderId || payment || status === "creating" || status === "pending") return;
+    void createPayment({ method: "qris", pwaOrderId });
+  }, [createPayment, payment, pwaOrderId, status]);
 
   return (
     <div className="flex flex-col gap-4">
       {!payment && (
-        <>
-          <PakasirMethodPicker
-            amount={amount}
-            method={method}
-            fees={fees}
-            feesLoading={feesLoading}
-            onSelect={setMethod}
-          />
-          <button
-            type="button"
-            disabled={!method || !pwaOrderId || status === "creating"}
-            onClick={() => {
-              if (method && pwaOrderId) void createPayment({ method, pwaOrderId });
-            }}
-            className="w-full rounded-xl bg-[#7a5c43] py-4 text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
-          >
-            {status === "creating" ? "Membuat pembayaran…" : "Bayar Sekarang"}
-          </button>
-        </>
+        <div className="rounded-2xl border border-[#7a5c43]/20 bg-[#7a5c43]/5 p-5 text-center">
+          <h2 className="text-lg font-extrabold">QRIS</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            QRIS sedang disiapkan untuk Rp {amount.toLocaleString("id-ID")}. QR akan langsung tampil di layar ini.
+          </p>
+          {status === "error" && (
+            <button
+              type="button"
+              onClick={() => void createPayment({ method: "qris", pwaOrderId: pwaOrderId ?? undefined })}
+              className="mt-4 rounded-xl bg-[#7a5c43] px-5 py-3 text-sm font-bold text-white"
+            >
+              Coba lagi
+            </button>
+          )}
+        </div>
       )}
       {payment && <PakasirPaymentView onPaid={onPaid} />}
     </div>

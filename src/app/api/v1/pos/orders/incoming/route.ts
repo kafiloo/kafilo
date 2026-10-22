@@ -2,7 +2,7 @@
 // API: GET /api/v1/pos/orders/incoming
 // Kasir menarik daftar pesanan online yang masuk dari PWA
 // Wajib session POS (cookie pos_session)
-// Return: PwaOrder dengan status PENDING_CONFIRMATION & BEING_PREPARED
+// Return: PwaOrder yang sudah dibayar dan sedang diproses
 // =============================================================
 
 import { NextResponse } from "next/server";
@@ -21,7 +21,7 @@ export async function GET() {
     const orders = await prisma.pwaOrder.findMany({
       where: {
         status: {
-          in: ["PENDING_CONFIRMATION", "BEING_PREPARED"],
+          in: ["BEING_PREPARED"],
         },
       },
       include: {

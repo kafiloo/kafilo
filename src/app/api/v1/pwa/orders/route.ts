@@ -22,9 +22,8 @@ export async function POST(req: NextRequest) {
 
     // --- Validasi Body ---
     const body = await req.json();
-    const { tableId, items, paymentMethod } = body as {
+    const { tableId, items } = body as {
       tableId?: string;
-      paymentMethod?: string;
       items?: Array<{
         productId: string;
         id?: string;
@@ -136,41 +135,6 @@ export async function POST(req: NextRequest) {
     // Total Akhir = Subtotal + Pajak + Layanan
     const finalTotalAmount = subTotalAmount + taxAmount + serviceAmount;
 
-    // --- Loyalty: Hitung & tambah poin ---
-    try {
-      const loyaltyEnabled = storeSetting?.loyaltyEnabled ?? true;
-      const rewardPerAmount = Math.max(storeSetting?.rewardPerAmount ?? 10000, 1);
-      const pointsEarnedSetting = storeSetting?.pointsEarned ?? 1;
-
-      if (loyaltyEnabled && customerPayload.phone) {
-        // Hitung poin dari total belanja akhir
-        const earnedPoints = Math.floor(finalTotalAmount / rewardPerAmount) * pointsEarnedSetting;
-        
-        let cleanPhone = customerPayload.phone.replace(/\D/g, "");
-        if (cleanPhone.startsWith("0")) cleanPhone = "62" + cleanPhone.slice(1);
-        else if (cleanPhone.startsWith("8")) cleanPhone = "62" + cleanPhone;
-
-        if (cleanPhone.length >= 10 && cleanPhone.length <= 14) {
-          const now = new Date();
-          const registrationBonus = storeSetting?.registrationPoints ?? 0;
-          
-          await prisma.customer.upsert({
-            where: { phone: cleanPhone },
-            update: { points: { increment: earnedPoints }, updatedAt: now },
-            create: {
-              phone: cleanPhone,
-              name: customerPayload.name || "-",
-              points: earnedPoints + registrationBonus,
-              createdAt: now,
-              updatedAt: now,
-            }
-          });
-        }
-      }
-    } catch (loyaltyErr) {
-      console.warn("[loyalty] Gagal update poin:", loyaltyErr);
-    }
-
     // 🔒 Validasi customerId sebelum create
     if (!customerPayload.sub) {
       return NextResponse.json({ message: "Customer tidak valid" }, { status: 400 });
@@ -183,7 +147,7 @@ export async function POST(req: NextRequest) {
         customerId: customerPayload.sub,
         totalAmount: finalTotalAmount, // Menggunakan total hitungan Server
         status: "PENDING_CONFIRMATION",
-        paymentMethod: paymentMethod === "QRIS" || paymentMethod === "CASH" || paymentMethod === "TRANSFER" ? paymentMethod : "CASH",
+        paymentMethod: "QRIS",
         items: itemsSnapshot, 
       },
     });

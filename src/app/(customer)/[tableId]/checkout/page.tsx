@@ -15,7 +15,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
   const { cart, clearCart } = useCartStore();
   const { customer, setCustomer } = usePwaAuthStore();
 
-  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState("PAKASIR");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [showAuthDrawer, setShowAuthDrawer] = useState(false);
@@ -36,9 +36,6 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
           acceptCash: data.settings.acceptCash ?? true,
           acceptQris: data.settings.acceptQris ?? true
         });
-        // Default select first available method
-        if (data.settings.acceptCash !== false) setPaymentMethod('CASH');
-        else if (data.settings.acceptQris !== false) setPaymentMethod('PAKASIR');
       }
     }).catch(() => {});
   }, []);
@@ -207,8 +204,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
           <PakasirCheckoutPanel amount={total} pwaOrderId={pwaOrderId} onPaid={handlePaid} />
         )}
 
-        {paymentMethod !== 'PAKASIR' && (
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
             <div className="text-center mb-6">
               <h2 className="font-extrabold text-lg tracking-wide">CRAFT COFFEE</h2>
               <p className="text-xs text-gray-500 mt-1">Jl. Senopati No. 42, Jakarta<br/>Tel: (021) 555-0123</p>
@@ -234,7 +230,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
                       <div className="text-[11px] text-gray-500 mt-0.5 ml-4">
                         {item.variants.split(', ').map((v, i) => <p key={i}>- {v}</p>)}
                       </div>
-                    )}
+                  )}
                   </div>
                   <p className="font-bold text-[#1a1f36]">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</p>
                 </div>
@@ -265,9 +261,8 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
               </div>
             </div>
           </div>
-        )}
 
-        {paymentMethod !== 'PAKASIR' && (
+        {false && (
           <div>
             <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-3">Select Payment Method</h3>
             
@@ -330,16 +325,15 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
         }}
       />
 
-      {/* CTA bawah disembunyikan saat panel Pakasir aktif (panel punya
-          tombol "Bayar Sekarang" sendiri + tampilan QR/VA). */}
+      {/* Setelah order dibuat, panel langsung membuat transaksi QRIS. */}
       {!(paymentMethod === 'PAKASIR' && pwaOrderId) && (
         <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 z-20">
           <div className="max-w-md mx-auto">
             <button 
               onClick={handleConfirmPayment}
-              disabled={!paymentMethod || isProcessing || orderCreating || (!storeSettings.acceptCash && !storeSettings.acceptQris)}
+              disabled={!paymentMethod || isProcessing || orderCreating || !storeSettings.acceptQris}
               className={`w-full py-4 rounded-xl font-bold text-[15px] transition-all flex justify-center items-center gap-2 ${
-                isProcessing || orderCreating || (!storeSettings.acceptCash && !storeSettings.acceptQris) ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' :
+                isProcessing || orderCreating || !storeSettings.acceptQris ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' :
                 paymentMethod 
                   ? 'bg-[#7a5c43] text-white shadow-md hover:bg-[#634832] active:scale-95' 
                   : 'bg-[#e8e2d9] text-white cursor-not-allowed'
@@ -347,9 +341,7 @@ export default function CustomerCheckoutPage({ params }: { params: Promise<{ tab
             >
               {isProcessing || orderCreating
                 ? 'Memproses...'
-                : paymentMethod === 'PAKASIR' && !pwaOrderId
-                  ? `Buat Pesanan - Rp ${total.toLocaleString('id-ID')}`
-                  : `Confirm Payment - Rp ${total.toLocaleString('id-ID')}`}
+                : `Bayar dengan QRIS - Rp ${total.toLocaleString('id-ID')}`}
             </button>
           </div>
         </div>

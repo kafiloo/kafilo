@@ -28,7 +28,10 @@ export async function GET() {
 
     // 2. Tarik pesanan online dari PWA (Tabel PwaOrder)
     const pwaOrders = await prisma.pwaOrder.findMany({
-      where: { createdAt: { gte: startOfDay, lte: endOfDay } },
+      where: {
+        createdAt: { gte: startOfDay, lte: endOfDay },
+        status: { in: ["BEING_PREPARED", "READY_FOR_PICKUP"] },
+      },
       include: { customer: { select: { name: true } } },
     });
 

@@ -61,6 +61,10 @@ export async function PATCH(
         throw new Error("ALREADY_FINALIZED");
       }
 
+      if (order.status === "PENDING_CONFIRMATION" && status === "BEING_PREPARED") {
+        throw new Error("PAYMENT_REQUIRED");
+      }
+
       // 🔥 KURANGI STOCK SAAT KASIR MENGKONFIRMASI PESANAN (status → BEING_PREPARED) 🔥
       if (status === "BEING_PREPARED" && order.status === "PENDING_CONFIRMATION") {
         const items = order.items as Array<{
@@ -144,6 +148,12 @@ export async function PATCH(
       return NextResponse.json(
         { message: "Pesanan yang sudah selesai atau dibatalkan tidak bisa diubah" },
         { status: 400 }
+      );
+    }
+    if (error?.message === "PAYMENT_REQUIRED") {
+      return NextResponse.json(
+        { message: "Pesanan belum dibayar dan belum dapat diproses." },
+        { status: 409 }
       );
     }
     console.error("[PATCH /api/v1/pos/orders/[orderId]/status]", error);

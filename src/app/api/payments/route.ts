@@ -75,6 +75,12 @@ export async function POST(req: NextRequest) {
       );
     }
     const { method, pwaOrderId, planId, qrisOnly, redirectUrl } = parsed.data;
+    if (pwaOrderId && method !== "qris") {
+      return NextResponse.json(
+        { message: "Pesanan pelanggan hanya dapat dibayar menggunakan QRIS." },
+        { status: 400 }
+      );
+    }
 
     // Ambil nominal dari server — jangan percaya amount dari client.
     let amount: number;
