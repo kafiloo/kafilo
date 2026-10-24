@@ -121,7 +121,8 @@ export default function KofiloLandingPage() {
       <div className="fixed top-0 w-full z-50 p-4 transition-all duration-500 pointer-events-none">
         <nav className={`max-w-7xl mx-auto pointer-events-auto transition-all duration-500 rounded-full px-6 py-3 flex items-center justify-between ${scrolled ? "bg-[#FCFBF7]/90 backdrop-blur-md shadow-sm" : "bg-transparent py-4"}`}>
           
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+          {/* KIRI (Logo) - Diberi flex-1 agar porsinya sama */}
+          <div className="flex-1 flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             {storeInfo.logo ? (
               <img src={storeInfo.logo} alt="Logo" className="w-8 h-8 rounded-full object-cover group-hover:scale-105 transition-all duration-300" />
             ) : (
@@ -132,7 +133,8 @@ export default function KofiloLandingPage() {
             <span className="font-bold text-[18px] tracking-tight">{storeInfo.name}</span>
           </div>
           
-          <div className="hidden md:flex items-center gap-8">
+          {/* TENGAH (Menu) - Diberi flex-1 dan justify-center agar presisi di tengah */}
+          <div className="hidden md:flex flex-1 items-center justify-center gap-8">
             {['Fitur', 'Showcase', 'Review', 'FAQ'].map((item) => (
               <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={(e) => scrollToSection(e, item.toLowerCase().replace(' ', '-'))} 
                  className="text-[14px] font-medium text-gray-500 hover:text-[#1a1f36] transition-colors duration-300">
@@ -141,7 +143,8 @@ export default function KofiloLandingPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* KANAN (Button) - Diberi flex-1 dan justify-end agar tetap menempel di kanan */}
+          <div className="flex-1 flex items-center justify-end gap-3">
              <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-white hover:text-black transition-all bg-transparent shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
@@ -181,75 +184,217 @@ export default function KofiloLandingPage() {
 
         {/* ── UI MOCKUP DASHBOARD ── */}
         <Reveal type="slide" delay={600} className="w-full">
-          <div className="mt-20 relative w-full max-w-5xl mx-auto h-[450px] md:h-[650px] perspective-1000">
+          <div className="mt-20 relative w-full max-w-6xl mx-auto h-[550px] md:h-[800px] perspective-1000">
             <div className="absolute inset-0 bg-[#F6F4EC] rounded-[24px] md:rounded-[32px] p-2 md:p-3 shadow-2xl">
-              <div className="w-full h-full bg-white rounded-[20px] md:rounded-[24px] overflow-hidden flex flex-col border border-gray-100 shadow-inner">
+              <div className="w-full h-full bg-white rounded-[20px] md:rounded-[24px] overflow-hidden flex flex-col border border-gray-200/80 shadow-inner">
+                
                 {/* Browser Header */}
                 <div className="h-12 bg-[#FDFCF8] border-b border-gray-100 flex items-center px-4 md:px-6 gap-4 shrink-0">
                   <div className="flex gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                    <div className="w-3 h-3 rounded-full bg-gray-200"></div>
+                    <div className="w-3 h-3 rounded-full bg-gray-200"></div>
+                    <div className="w-3 h-3 rounded-full bg-gray-200"></div>
                   </div>
                   <div className="flex-1 flex justify-center">
-                    <div className="bg-white border border-gray-100 rounded-full px-8 py-1.5 text-[10px] text-gray-400 font-medium tracking-wide">
+                    <div className="bg-white border border-gray-100/80 rounded-full px-10 py-1.5 text-[11px] text-gray-400 font-medium tracking-wide shadow-sm">
                       app.kafiloo.com/dashboard
                     </div>
                   </div>
-                  <div className="w-10"></div>
+                  <div className="w-12"></div>
                 </div>
                 
                 {/* App Body */}
-                <div className="flex-1 flex overflow-hidden bg-[#F8F9FA] text-[#1a1f36]">
+                <div className="flex-1 flex overflow-hidden bg-[#F9F9FB] text-[#1a1f36]">
+                  
                   {/* Sidebar */}
-                  <div className="hidden md:flex w-64 bg-white border-r border-gray-100 p-6 flex-col shrink-0">
-                    <div className="flex items-center gap-3 mb-10">
-                       <div className="w-10 h-10 rounded-full bg-[#FCF3EA] flex items-center justify-center">
-                         <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
-                       </div>
-                       <div>
-                         <p className="font-black text-[14px] leading-tight">Kofilo</p>
-                         <p className="text-[9px] text-gray-400 font-bold tracking-widest uppercase">Workspace</p>
-                       </div>
+                  <div className="hidden md:flex w-64 bg-white border-r border-gray-100 p-5 flex-col shrink-0 justify-between z-10">
+                    <div>
+                      {/* Logo Area */}
+                      <div className="flex items-center gap-3 mb-10 px-2 mt-2">
+                        <div className="w-10 h-10 rounded-full bg-[#FCF3EA] flex items-center justify-center">
+                          <div className="w-3 h-3 bg-[#E58B55] rounded-full"></div>
+                        </div>
+                        <div>
+                          <p className="font-black text-[15px] leading-tight">Kofilo</p>
+                          <p className="text-[9px] text-gray-400 font-bold tracking-widest uppercase">Workspace</p>
+                        </div>
+                      </div>
+
+                      {/* Menu List */}
+                      <div className="flex flex-col gap-1.5">
+                        <div className="h-11 w-full bg-white border border-[#1a1f36] shadow-[0_2px_10px_rgba(0,0,0,0.04)] rounded-xl flex items-center px-4 gap-3 cursor-pointer">
+                          <svg className="w-4 h-4 text-[#1a1f36]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                          <span className="font-bold text-[13px] text-[#1a1f36]">Dashboard</span>
+                        </div>
+                        
+                        {[
+                          { icon: "M4 6h16M4 10h16M4 14h16M4 18h16", label: "Menu Management" },
+                          { icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", label: "Report" },
+                          { icon: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z", label: "Loyalty Hub", arrow: true },
+                          { icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z", label: "Store Settings", arrow: true },
+                          { icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z", label: "User Access" }
+                        ].map((item, i) => (
+                          <div key={i} className="h-10 w-full flex items-center justify-between px-4 text-gray-400 hover:bg-gray-50 hover:text-gray-600 rounded-xl cursor-pointer transition-colors">
+                            <div className="flex items-center gap-3">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d={item.icon} /></svg>
+                              <span className="font-medium text-[13px]">{item.label}</span>
+                            </div>
+                            {item.arrow && (
+                              <svg className="w-3 h-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2 flex-1">
-                      <div className="h-11 w-full bg-white border-2 border-gray-800 shadow-sm rounded-xl flex items-center px-4 gap-3">
-                        <svg className="w-4 h-4 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                        <span className="font-bold text-[12px]">Dashboard</span>
+
+                    {/* Bottom Profile */}
+                    <div className="bg-gray-50 rounded-[20px] p-4 border border-gray-100">
+                      <div className="flex items-center gap-3 mb-4">
+                         <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-[11px] font-black text-gray-500">
+                           AM
+                         </div>
+                         <div>
+                           <p className="font-bold text-[13px] text-[#1a1f36]">Alex Morgan</p>
+                           <p className="text-[11px] text-gray-400 font-medium">Super Admin</p>
+                         </div>
                       </div>
-                      <div className="h-10 w-full flex items-center px-4 gap-3 text-gray-400">
-                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-                         <span className="font-medium text-[12px]">Menu Management</span>
-                      </div>
-                      <div className="h-10 w-full flex items-center px-4 gap-3 text-gray-400">
-                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                         <span className="font-medium text-[12px]">Report</span>
+                      <div className="w-full h-9 bg-red-50 text-red-500 rounded-xl flex items-center justify-center gap-2 cursor-pointer border border-red-100 hover:bg-red-100 transition-colors">
+                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                         <span className="text-[12px] font-bold">Logout</span>
                       </div>
                     </div>
                   </div>
-                  {/* Main Content (Mockup Details) */}
-                  <div className="flex-1 p-6 md:p-8 flex flex-col gap-6 overflow-y-auto">
-                     <div className="flex justify-between items-start">
+
+                  {/* Main Content Area */}
+                  <div className="flex-1 p-6 md:p-10 flex flex-col overflow-y-auto">
+                     
+                     {/* Header Dashboard */}
+                     <div className="flex justify-between items-start mb-8">
                        <div>
-                         <h2 className="text-[22px] font-black mb-1">Welcome back, Alex</h2>
-                         <p className="text-gray-400 text-[12px]">Here's what's happening at your stores on this selected date.</p>
+                         <h2 className="text-[24px] md:text-[28px] font-black mb-1.5 tracking-tight text-[#1a1f36]">Welcome back, Alex</h2>
+                         <p className="text-gray-400 text-[13px] font-medium">Here's what's happening at your stores on this selected date.</p>
+                       </div>
+                       <div className="hidden md:flex gap-3">
+                         <div className="h-10 bg-white border border-gray-200 rounded-xl flex items-center px-4 gap-2 text-[12px] font-bold text-gray-500 shadow-sm cursor-pointer hover:bg-gray-50">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            Tue, Jun 30, 2026
+                         </div>
+                         <div className="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-400 shadow-sm cursor-pointer hover:bg-gray-50 relative">
+                            <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                         </div>
                        </div>
                      </div>
+
                      {/* Stats Row */}
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <div className="bg-white rounded-[20px] shadow-sm p-6 border border-gray-100">
-                          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-3">Gross Revenue</p>
-                          <h3 className="text-[28px] font-black text-[#1a1f36] mb-1">Rp 0</h3>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+                        <div className="bg-white rounded-[24px] shadow-sm p-6 md:p-8 border border-gray-100 hover:shadow-md transition-shadow">
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Gross Revenue</p>
+                          <h3 className="text-[32px] font-black text-[#1a1f36] mb-2 tracking-tight">Rp 0</h3>
+                          <p className="text-[12px] text-gray-400 font-medium">Total revenue generated today</p>
                         </div>
-                        <div className="bg-white rounded-[20px] shadow-sm p-6 border border-gray-100">
-                          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-3">Completed Orders</p>
-                          <h3 className="text-[28px] font-black text-[#1a1f36] mb-1">0</h3>
+                        <div className="bg-white rounded-[24px] shadow-sm p-6 md:p-8 border border-gray-100 hover:shadow-md transition-shadow">
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Completed Orders</p>
+                          <h3 className="text-[32px] font-black text-[#1a1f36] mb-2 tracking-tight">0</h3>
+                          <p className="text-[12px] text-gray-400 font-medium">Total orders processed</p>
                         </div>
-                        <div className="bg-white rounded-[20px] shadow-sm p-6 border border-gray-100">
-                          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-3">Total Items Sold</p>
-                          <h3 className="text-[28px] font-black text-[#1a1f36] mb-1">0</h3>
+                        <div className="bg-white rounded-[24px] shadow-sm p-6 md:p-8 border border-gray-100 hover:shadow-md transition-shadow">
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Total Items Sold</p>
+                          <h3 className="text-[32px] font-black text-[#1a1f36] mb-2 tracking-tight">0</h3>
+                          <p className="text-[12px] text-gray-400 font-medium">Cups / items prepared today</p>
                         </div>
                      </div>
+
+                     {/* Divider Product Performance */}
+                     <div className="flex items-center gap-4 mb-8">
+                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Product Performance</span>
+                       <div className="h-[1px] w-full bg-gray-200"></div>
+                     </div>
+
+                     {/* Tables Row */}
+                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-10">
+                        
+                        {/* Best Sellers Table */}
+                        <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 md:p-8">
+                          <h3 className="text-[18px] font-black text-[#1a1f36] mb-6">Top 5 Best Sellers</h3>
+                          
+                          <div className="flex items-center text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-4 px-2">
+                             <div className="w-8">No</div>
+                             <div className="flex-1">Menu Name</div>
+                             <div className="w-16 text-right">Qty</div>
+                             <div className="w-28 text-right">Revenue</div>
+                          </div>
+                          
+                          <div className="flex flex-col gap-2">
+                            {[
+                              { no: 1, name: "Almond Milk Substitute", cat: "For You", qty: "1278", rev: "Rp 3.633.000" },
+                              { no: 2, name: "Americano", cat: "Coffee", qty: "302", rev: "Rp 7.216.500" },
+                              { no: 3, name: "Peach", cat: "Mocktail", qty: "183", rev: "Rp 6.136.300" },
+                              { no: 4, name: "Iced Caramel Macchiato", cat: "Coffee", qty: "97", rev: "Rp 3.094.600" },
+                              { no: 5, name: "Artisan Latte", cat: "Coffee", qty: "43", rev: "Rp 1.249.400" }
+                            ].map((item) => (
+                              <div key={item.no} className="flex items-center px-2 py-3 hover:bg-gray-50 rounded-xl transition-colors">
+                                <div className="w-8 text-[12px] font-bold text-gray-400">{item.no}</div>
+                                <div className="flex-1 flex items-center gap-3">
+                                  {item.no === 1 ? (
+                                     <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-[14px]">🍯</div>
+                                  ) : (
+                                     <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100"></div>
+                                  )}
+                                  <div>
+                                    <p className="text-[13px] font-bold text-[#1a1f36]">{item.name}</p>
+                                    <p className="text-[11px] text-gray-400 font-medium">{item.cat}</p>
+                                  </div>
+                                </div>
+                                <div className="w-16 text-right text-[13px] font-bold text-[#1a1f36]">{item.qty}</div>
+                                <div className="w-28 text-right text-[13px] font-bold text-[#1a1f36]">{item.rev}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Slow Movers Table */}
+                        <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 md:p-8">
+                          <h3 className="text-[18px] font-black text-[#1a1f36] mb-6">Bottom 5 Slow Movers</h3>
+                          
+                          <div className="flex items-center text-[10px] font-bold text-gray-300 uppercase tracking-widest mb-4 px-2">
+                             <div className="w-8">No</div>
+                             <div className="flex-1">Menu Name</div>
+                             <div className="w-16 text-right">Qty</div>
+                             <div className="w-28 text-right">Status</div>
+                          </div>
+                          
+                          <div className="flex flex-col gap-2">
+                            {[
+                              { no: 1, name: "Kentang Goreng", cat: "Snack", qty: "0", status: "Zero Sales", type: "danger" },
+                              { no: 2, name: "asdasd", cat: "For You", qty: "0", status: "Zero Sales", type: "danger" },
+                              { no: 3, name: "asdasd", cat: "For You", qty: "0", status: "Zero Sales", type: "danger" },
+                              { no: 4, name: "Butter Croissant", cat: "Pastry", qty: "11", status: "Low Demand", type: "warning" },
+                              { no: 5, name: "Vegan Brownie", cat: "Pastry", qty: "11", status: "Low Demand", type: "warning" }
+                            ].map((item) => (
+                              <div key={item.no} className="flex items-center px-2 py-3 hover:bg-gray-50 rounded-xl transition-colors">
+                                <div className="w-8 text-[12px] font-bold text-gray-400">{item.no}</div>
+                                <div className="flex-1 flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100"></div>
+                                  <div>
+                                    <p className="text-[13px] font-bold text-[#1a1f36]">{item.name}</p>
+                                    <p className="text-[11px] text-gray-400 font-medium">{item.cat}</p>
+                                  </div>
+                                </div>
+                                <div className="w-16 text-right text-[13px] font-black text-[#1a1f36] pr-4">{item.qty}</div>
+                                <div className="w-28 flex justify-end">
+                                  <div className={`px-2.5 py-1 rounded-md text-[10px] font-bold flex items-center gap-1.5 ${item.type === 'danger' ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full ${item.type === 'danger' ? 'bg-red-500' : 'bg-orange-500'}`}></div>
+                                    {item.status}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                     </div>
+
                   </div>
                 </div>
               </div>
@@ -273,7 +418,7 @@ export default function KofiloLandingPage() {
       </section>
 
       {/* ── EKOSISTEM / FITUR GRID ── */}
-      <section id="fitur" className="pt-32 pb-16 scroll-mt-20 relative z-10 bg-[#FEFAF1]">
+      <section id="fitur" className="py-32 scroll-mt-20 relative z-10 bg-[#FEFAF1]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <Reveal>
             <div className="mb-16 max-w-3xl">
@@ -319,7 +464,7 @@ export default function KofiloLandingPage() {
       </section>
 
       {/* ── IMPACT SECTION (BARU SESUAI GAMBAR) ── */}
-      <section id="impact" className="py-36 md:py-44 bg-[#FEFAF1] relative z-10">
+      <section id="impact" className="py-32 bg-[#FEFAF1] relative z-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
             
@@ -364,154 +509,100 @@ export default function KofiloLandingPage() {
         </div>
       </section>
 
-      {/* ── CARA KERJA (ALUR) ── */}
-      <section id="cara-kerja" className="py-32 bg-[#FEFAF1] text-[#1a1f36] relative overflow-hidden scroll-mt-10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          <Reveal>
-            <div className="mb-20 text-center md:text-left">
-              <h2 className="text-[36px] md:text-[52px] font-bold tracking-tight mb-6">Alur Kerja Tanpa Gesekan.</h2>
-              <p className="text-gray-400 font-medium text-[18px] max-w-2xl mx-auto md:mx-0">Dari pelanggan duduk hingga hidangan tersaji, semuanya tersinkronisasi dalam hitungan detik.</p>
-            </div>
-          </Reveal>
-
-          <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 relative">
-            <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-transparent via-gray-600 to-transparent -translate-y-1/2 opacity-50"></div>
-            
-            <Reveal delay={100} className="flex-1 w-full">
-              <div className="bg-[#27272a] rounded-[32px] p-10 border border-white/5 relative z-10 flex flex-col h-full hover:-translate-y-4 transition-all duration-500 cursor-pointer group shadow-lg">
-                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform origin-left">📱</div>
-                <h3 className="text-[20px] font-bold mb-4 text-white">1. Scan & Pesan</h3>
-                <p className="text-gray-400 text-[15px] leading-relaxed">Pelanggan scan QR di meja menggunakan kamera HP, melihat menu digital interaktif, dan langsung checkout.</p>
-              </div>
-            </Reveal>
-
-            <Reveal delay={300} className="flex-1 w-full">
-              <div className="bg-gradient-to-b from-gray-800 to-[#18181b] rounded-[32px] p-10 border border-gray-600/50 relative z-10 flex flex-col h-full md:-translate-y-6 hover:-translate-y-10 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition-all duration-500 shadow-2xl cursor-pointer group">
-                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform origin-left">💻</div>
-                <h3 className="text-[20px] font-bold mb-4 text-white">2. Kasir Konfirmasi</h3>
-                <p className="text-gray-300 text-[15px] leading-relaxed">Pesanan masuk ke dasbor kasir diiringi bunyi notifikasi. Cukup klik "Terima", struk dapur otomatis tercetak.</p>
-              </div>
-            </Reveal>
-
-            <Reveal delay={500} className="flex-1 w-full">
-              <div className="bg-[#27272a] rounded-[32px] p-10 border border-white/5 relative z-10 flex flex-col h-full hover:-translate-y-4 transition-all duration-500 cursor-pointer group shadow-lg">
-                <div className="text-5xl mb-8 group-hover:scale-110 transition-transform origin-left">🍳</div>
-                <h3 className="text-[20px] font-bold mb-4 text-white">3. Dapur Menyiapkan</h3>
-                <p className="text-gray-400 text-[15px] leading-relaxed">Dapur membaca struk pesanan yang jelas tanpa salah baca tulisan tangan. Pesanan dihidangkan tepat waktu.</p>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ── BENTO GRID MEGA FEATURES (Opsional: Tetap dipertahankan untuk Showcase visual) ── */}
-      <section id="showcase" className="py-32 max-w-7xl mx-auto px-6 lg:px-8 scroll-mt-20">
-        <Reveal>
-          <div className="text-center mb-20 max-w-3xl mx-auto">
-            <h2 className="text-[36px] md:text-[48px] font-bold tracking-tight mb-6 text-[#1a1f36]">Ekspansi Tanpa Batas.</h2>
-            <p className="text-gray-500 font-medium text-[18px] leading-relaxed">Visualisasi fitur unggulan kami. Menggantikan tiga sistem sekaligus dengan antarmuka yang modern dan responsif.</p>
-          </div>
-        </Reveal>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 auto-rows-[minmax(280px,auto)]">
-          
-          {/* Card 1: PWA Ordering (Large) */}
-          <Reveal delay={100} className="md:col-span-2 md:row-span-2 w-full h-full">
-            <div className="bg-[#1a1f36] rounded-[48px] p-12 h-full relative overflow-hidden group cursor-pointer hover:-translate-y-6 hover:shadow-[0_40px_80px_rgba(26,31,54,0.3)] transition-all duration-500 border border-gray-800 flex flex-col justify-center">
-              <div className="relative z-10 max-w-sm">
-                <div className="w-16 h-16 bg-white/10 rounded-[20px] flex items-center justify-center text-white mb-8 border border-white/20 backdrop-blur-md shadow-lg group-hover:scale-110 transition-transform">📱</div>
-                <h3 className="text-[32px] md:text-[44px] font-black text-white mb-6 tracking-tight leading-tight">PWA Self-Order <br/>Masa Depan.</h3>
-                <p className="text-gray-400 text-[16px] leading-relaxed mb-8">Tanpa repot instal aplikasi. Pelanggan buka browser, pilih menu dengan foto yang menggugah selera, dan langsung checkout.</p>
-                <div className="inline-flex gap-2 text-emerald-400 font-bold text-sm bg-emerald-400/10 px-5 py-2.5 rounded-full border border-emerald-400/20">✔ Konversi naik 50%</div>
-              </div>
-              <div className="absolute -right-10 -bottom-10 w-[350px] h-[350px] border-[24px] border-white/5 rounded-full group-hover:scale-150 transition-transform duration-[1.5s]"></div>
-            </div>
-          </Reveal>
-
-          {/* Card 2: Analitik Pintar */}
-          <Reveal delay={200} className="md:col-span-2 md:row-span-1 w-full h-full">
-            <div className="bg-white border border-gray-200 rounded-[40px] p-10 h-full flex flex-col justify-center group cursor-pointer hover:-translate-y-6 hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)] transition-all duration-500 relative overflow-hidden">
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[20px] flex items-center justify-center mb-6 border border-blue-100 text-3xl group-hover:scale-110 transition-transform shadow-sm">📈</div>
-                <h3 className="text-[26px] font-black text-[#1a1f36] mb-3">Analitik Pintar</h3>
-                <p className="text-gray-500 text-[16px] leading-relaxed max-w-sm">Pantau menu terlaris, pendapatan kotor, dan jam sibuk kafe Anda lewat grafik cantik.</p>
-              </div>
-              <div className="absolute right-0 bottom-0 w-48 h-48 bg-gradient-to-tl from-blue-100/50 to-transparent opacity-50 rounded-tl-full pointer-events-none"></div>
-            </div>
-          </Reveal>
-
-          {/* Card 3: Loyalty Hub */}
-          <Reveal delay={300} className="md:col-span-2 md:row-span-1 w-full h-full">
-            <div className="bg-gradient-to-br from-[#6C4E31] to-[#4a3420] text-white rounded-[40px] p-10 h-full relative overflow-hidden group cursor-pointer hover:-translate-y-6 hover:shadow-[0_40px_80px_rgba(108,78,49,0.4)] transition-all duration-500 border border-[#856140] flex flex-col justify-center">
-               <div className="w-16 h-16 bg-white/20 rounded-[20px] flex items-center justify-center mb-6 backdrop-blur-md text-3xl group-hover:rotate-12 transition-transform shadow-sm">🎁</div>
-               <h3 className="text-[26px] font-black mb-3 text-white">Loyalty & Poin Otomatis</h3>
-               <p className="text-white/80 text-[16px] leading-relaxed max-w-sm">Poin pelanggan bertambah instan. Mereka bisa klaim reward secara digital tanpa kartu member fisik.</p>
-               <div className="absolute right-8 top-10 bg-amber-400/20 text-amber-300 font-bold px-4 py-1.5 rounded-full text-sm border border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.3)] animate-pulse">+50 Pts</div>
-            </div>
-          </Reveal>
-
-          {/* Card 4: Multi Pembayaran */}
-          <Reveal delay={400} className="md:col-span-1 md:row-span-1 w-full h-full">
-            <div className="bg-white border border-gray-200 rounded-[40px] p-8 h-full shadow-[0_10px_30px_rgba(0,0,0,0.04)] flex flex-col justify-center text-center items-center group cursor-pointer hover:-translate-y-6 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)] transition-all duration-500">
-               <div className="text-5xl mb-6 group-hover:scale-125 transition-transform">💳</div>
-               <h3 className="text-[20px] font-black text-[#1a1f36] mb-3">Multi Payment</h3>
-               <p className="text-gray-500 text-[14px] px-2">Terima QRIS, Cash, & Bank Transfer.</p>
-            </div>
-          </Reveal>
-
-          {/* Card 5: Live CMS */}
-          <Reveal delay={500} className="md:col-span-2 md:row-span-1 w-full h-full">
-            <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-[40px] p-10 h-full shadow-[0_10px_30px_rgba(0,0,0,0.04)] flex flex-col justify-center relative overflow-hidden group cursor-pointer hover:-translate-y-6 hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)] transition-all duration-500">
-               <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-56 h-56 bg-emerald-100/50 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-               <div className="relative z-10">
-                 <div className="w-16 h-16 bg-gray-800 text-white rounded-[20px] flex items-center justify-center mb-6 text-3xl group-hover:rotate-90 transition-transform duration-700 shadow-md">⚙️</div>
-                 <h3 className="text-[26px] font-black text-[#1a1f36] mb-3">Live Cloud CMS</h3>
-                 <p className="text-gray-500 text-[16px] max-w-sm leading-relaxed">Atur PPN, kosongkan stok menu, hingga atur jam buka tutup toko secara real-time dari mana saja.</p>
-               </div>
-            </div>
-          </Reveal>
-
-          {/* Card 6: Kustomisasi Struk */}
-          <Reveal delay={600} className="md:col-span-1 md:row-span-1 w-full h-full">
-             <div className="bg-white border border-gray-200 rounded-[40px] p-8 h-full shadow-[0_10px_30px_rgba(0,0,0,0.04)] relative group cursor-pointer hover:-translate-y-6 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)] transition-all duration-500 flex flex-col items-center text-center justify-center overflow-hidden">
-                <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-[20px] flex items-center justify-center mb-6 border border-amber-100 text-3xl group-hover:scale-110 transition-transform shadow-sm relative z-10">🧾</div>
-                <h3 className="text-[20px] font-black text-[#1a1f36] mb-3 relative z-10">Struk Custom</h3>
-                <p className="text-gray-500 text-[14px] px-2 relative z-10">Sisipkan Password WiFi & pesan di struk pelanggan.</p>
-             </div>
-          </Reveal>
-
-        </div>
-      </section>
-
       {/* ── KOMPATIBILITAS DEVICE ── */}
-      <section className="py-32 bg-[#FEFAF1] border-t border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-16">
-          <Reveal className="w-full md:w-1/2">
-            <h2 className="text-[36px] md:text-[48px] font-bold tracking-tight mb-6 text-[#1a1f36] leading-[1.1]">Jalankan Kofilo di Perangkat Apapun.</h2>
-            <p className="text-gray-500 text-[18px] mb-10 leading-relaxed">
+      <section className="py-32 bg-[#FEFAF1] overflow-hidden relative z-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between gap-16">
+          
+          {/* Kolom Kiri: Teks & Ikon */}
+          <Reveal className="w-full lg:w-1/2">
+            {/* Label Oren Tambahan */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
+              <span className="text-[11px] font-bold text-[#E58B55] uppercase tracking-[0.25em]">KOMPATIBILITAS</span>
+            </div>
+            
+            <h2 className="text-[36px] md:text-[48px] lg:text-[52px] font-bold tracking-tight mb-6 text-[#1a1f36] leading-[1.1]">
+              Jalankan Kofilo di Perangkat Apapun.
+            </h2>
+            <p className="text-gray-500 text-[16px] md:text-[18px] mb-12 leading-relaxed max-w-lg">
               Anda tidak perlu membeli mesin kasir besar yang mahal. Kofilo berbasis web responsif penuh yang berjalan sangat mulus di iPad, Tablet Android, Laptop, maupun HP kasir Anda.
             </p>
-            <div className="flex gap-6">
-               <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-2xl">📱</div><span className="text-[13px] font-bold text-gray-500">Mobile</span></div>
-               <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-2xl">📟</div><span className="text-[13px] font-bold text-gray-500">Tablet</span></div>
-               <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center text-2xl">💻</div><span className="text-[13px] font-bold text-gray-500">Desktop</span></div>
-            </div>
-          </Reveal>
-          <Reveal delay={200} className="w-full md:w-1/2">
-            <div className="w-full aspect-[4/3] bg-gray-100 rounded-[40px] shadow-inner border-[8px] border-white flex items-center justify-center p-8 relative overflow-hidden">
-               <div className="w-full h-full bg-[#18181b] rounded-[24px] shadow-2xl relative overflow-hidden flex shadow-[0_20px_40px_rgba(0,0,0,0.2)] border border-gray-700">
-                  <div className="w-1/4 h-full bg-[#27272a] border-r border-gray-700 p-5"><div className="w-8 h-8 rounded-lg bg-gray-600 mb-6"></div><div className="w-full h-4 bg-gray-700 rounded mb-4"></div><div className="w-3/4 h-4 bg-gray-700 rounded mb-4"></div></div>
-                  <div className="w-3/4 h-full bg-gray-50 p-6 flex flex-wrap gap-4 content-start">
-                     <div className="w-[30%] h-24 bg-white rounded-xl shadow-sm border border-gray-200"></div><div className="w-[30%] h-24 bg-white rounded-xl shadow-sm border border-gray-200"></div><div className="w-[30%] h-24 bg-white rounded-xl shadow-sm border border-gray-200"></div>
-                  </div>
+            
+            {/* Ikon Device Custom SVG */}
+            <div className="flex gap-6 md:gap-8">
+               {/* Mobile */}
+               <div className="flex flex-col items-center gap-3">
+                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-center transition-transform hover:-translate-y-1">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="5" y="2" width="14" height="20" rx="3" fill="#6366f1" />
+                      <rect x="8" y="6" width="3" height="3" rx="0.5" fill="#f472b6" />
+                      <rect x="13" y="6" width="3" height="3" rx="0.5" fill="#fbbf24" />
+                      <rect x="8" y="11" width="3" height="3" rx="0.5" fill="#34d399" />
+                      <rect x="13" y="11" width="3" height="3" rx="0.5" fill="#60a5fa" />
+                      <rect x="10" y="17" width="4" height="1.5" rx="0.75" fill="#c7d2fe" />
+                    </svg>
+                 </div>
+                 <span className="text-[14px] font-bold text-[#1a1f36]">Mobile</span>
+               </div>
+               
+               {/* Tablet */}
+               <div className="flex flex-col items-center gap-3">
+                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-center transition-transform hover:-translate-y-1">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="2" y="5" width="20" height="14" rx="3" fill="#10b981" />
+                      <rect x="4" y="7" width="14" height="10" rx="1" fill="#ecfdf5" />
+                      <rect x="5" y="8" width="3" height="2" rx="0.5" fill="#f43f5e" />
+                      <rect x="9" y="8" width="3" height="2" rx="0.5" fill="#3b82f6" />
+                      <rect x="19" y="10.5" width="2" height="3" rx="1" fill="#047857" />
+                    </svg>
+                 </div>
+                 <span className="text-[14px] font-bold text-[#1a1f36]">Tablet</span>
+               </div>
+               
+               {/* Desktop */}
+               <div className="flex flex-col items-center gap-3">
+                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-center transition-transform hover:-translate-y-1">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="2" y="4" width="20" height="13" rx="2" fill="#3b82f6" />
+                      <rect x="4" y="6" width="16" height="9" rx="1" fill="#eff6ff" />
+                      <path d="M8 21h8v-2a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2z" fill="#93c5fd" />
+                    </svg>
+                 </div>
+                 <span className="text-[14px] font-bold text-[#1a1f36]">Desktop</span>
                </div>
             </div>
           </Reveal>
+
+          {/* Kolom Kanan: Mockup UI Bersih */}
+          <Reveal delay={200} type="slide" direction="left" className="w-full lg:w-1/2">
+            <div className="w-full aspect-[4/3] md:aspect-[16/11] bg-[#F4F4F5]/80 rounded-[40px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] p-4 md:p-6 flex items-center justify-center relative overflow-hidden border border-gray-200/50 hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.15)] transition-shadow duration-500">
+               
+               <div className="w-full h-full bg-white rounded-[24px] md:rounded-[28px] overflow-hidden flex shadow-sm border border-gray-200">
+                  
+                  {/* Sidebar Gelap */}
+                  <div className="w-[35%] max-w-[140px] h-full bg-[#27272a] p-5 md:p-6 flex flex-col gap-4">
+                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-[14px] bg-[#3f3f46] mb-4"></div>
+                     <div className="w-[80%] h-3 bg-[#3f3f46] rounded-full"></div>
+                     <div className="w-[50%] h-3 bg-[#3f3f46] rounded-full"></div>
+                  </div>
+                  
+                  {/* Konten Utama Putih */}
+                  <div className="flex-1 bg-white p-6 md:p-8 flex gap-4 md:gap-5 content-start flex-wrap">
+                     <div className="w-[70px] h-[70px] md:w-[90px] md:h-[90px] bg-white rounded-[16px] shadow-sm border-[1.5px] border-gray-200/80"></div>
+                     <div className="w-[70px] h-[70px] md:w-[90px] md:h-[90px] bg-white rounded-[16px] shadow-sm border-[1.5px] border-gray-200/80"></div>
+                     <div className="w-[70px] h-[70px] md:w-[90px] md:h-[90px] bg-white rounded-[16px] shadow-sm border-[1.5px] border-gray-200/80 hidden sm:block"></div>
+                  </div>
+
+               </div>
+
+            </div>
+          </Reveal>
+
         </div>
       </section>
 
-      {/* ── TESTIMONIAL / REVIEW (BARU) ── */}
-      <section id="review" className="relative py-32 bg-[#FEFAF1] text-[#1a1f36] overflow-hidden scroll-mt-10">
+{/* ── TESTIMONIAL / REVIEW (BARU) ── */}
+      <section id="review" className="py-32 relative bg-[#FEFAF1] text-[#1a1f36] overflow-hidden scroll-mt-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
           <Reveal>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
@@ -536,47 +627,87 @@ export default function KofiloLandingPage() {
         </div>
 
         {/* Carousel Container */}
-        <div className="relative max-w-[1400px] mx-auto">
+        <div className="relative max-w-[1400px] mx-auto group">
           {/* Gradient Edges untuk efek fade di ujung kiri & kanan */}
-          <div className="absolute top-0 left-0 w-12 md:w-32 h-full bg-gradient-to-r from-[#FCFBF7] to-transparent pointer-events-none z-10"></div>
-          <div className="absolute top-0 right-0 w-12 md:w-32 h-full bg-gradient-to-l from-[#FCFBF7] to-transparent pointer-events-none z-10"></div>
+          <div className="absolute top-0 left-0 w-16 md:w-32 h-full bg-gradient-to-r from-[#FEFAF1] to-transparent pointer-events-none z-10"></div>
+          <div className="absolute top-0 right-0 w-16 md:w-32 h-full bg-gradient-to-l from-[#FEFAF1] to-transparent pointer-events-none z-10"></div>
           
-          <Reveal delay={200} type="slide" direction="right">
-            {/* Class penyembunyi scrollbar standar Tailwind ada di sini */}
-            <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory px-6 md:px-32 pb-12 pt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <Reveal delay={200} type="slide" direction="up" className="w-full">
+            {/* Pembungkus utama untuk efek Infinite Marquee */}
+            {/* group-hover akan menghentikan animasi saat mouse masuk */}
+            <div className="flex w-full overflow-hidden py-4 group-hover:[&>div]:[animation-play-state:paused]">
               
-              {[
-                { name: "Rizky K.", role: "Owner, Kopi Sanggar", initial: "RK", quote: "Sangat premium, mudah dimengerti dari pertama lihat." },
-                { name: "Nadia P.", role: "Barista Lead, Beans Lab", initial: "NP", quote: "Visualnya bersih dan modern, terasa lebih terpercaya." },
-                { name: "Farhan M.", role: "Owner, Daily Roast", initial: "FM", quote: "Navigasinya enak dan keseluruhan tampilannya lebih engaging." },
-                { name: "Sinta W.", role: "Owner, Brew & Bake", initial: "SW", quote: "Detail kecilnya rapi, terasa dibuat oleh orang yang paham operasional." }
-              ].map((review, i) => (
-                <div key={i} className="min-w-[300px] md:min-w-[360px] bg-white rounded-[24px] p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 snap-center flex flex-col hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300">
-                  <div className="flex gap-1 text-[#E58B55] text-[18px] mb-6">
-                    <span>★</span><span>★</span><span>★</span><span>★</span><span className="text-gray-200">★</span>
-                  </div>
-                  <p className="text-gray-600 text-[15px] leading-relaxed mb-8 flex-1">
-                    "{review.quote}"
-                  </p>
-                  <div className="border-t border-gray-100 pt-6 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-[#1a1f36] text-white flex items-center justify-center text-[12px] font-bold">
-                      {review.initial}
+              {/* Set 1 */}
+              <div className="animate-marquee flex gap-6 shrink-0 pl-6">
+                {[
+                  { name: "Rizky K.", role: "Owner, Kopi Sanggar", initial: "RK", quote: "Sangat premium, mudah dimengerti dari pertama lihat." },
+                  { name: "Nadia P.", role: "Barista Lead, Beans Lab", initial: "NP", quote: "Visualnya bersih dan modern, terasa lebih terpercaya." },
+                  { name: "Farhan M.", role: "Owner, Daily Roast", initial: "FM", quote: "Navigasinya enak dan keseluruhan tampilannya lebih engaging." },
+                  { name: "Sinta W.", role: "Owner, Brew & Bake", initial: "SW", quote: "Detail kecilnya rapi, terasa dibuat oleh orang yang paham operasional." },
+                  { name: "Rizky K.", role: "Owner, Kopi Sanggar", initial: "RK", quote: "Sangat premium, mudah dimengerti dari pertama lihat." },
+                  { name: "Nadia P.", role: "Barista Lead, Beans Lab", initial: "NP", quote: "Visualnya bersih dan modern, terasa lebih terpercaya." },
+                  { name: "Farhan M.", role: "Owner, Daily Roast", initial: "FM", quote: "Navigasinya enak dan keseluruhan tampilannya lebih engaging." },
+                  { name: "Sinta W.", role: "Owner, Brew & Bake", initial: "SW", quote: "Detail kecilnya rapi, terasa dibuat oleh orang yang paham operasional." }
+                ].map((review, i) => (
+                  <div key={`set1-${i}`} className="min-w-[300px] md:min-w-[360px] bg-white rounded-[24px] p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex gap-1 text-[#E58B55] text-[18px] mb-6">
+                      <span>★</span><span>★</span><span>★</span><span>★</span><span className="text-gray-200">★</span>
                     </div>
-                    <div>
-                      <p className="font-bold text-[14px] text-[#1a1f36]">{review.name}</p>
-                      <p className="text-[12px] text-gray-400">{review.role}</p>
+                    <p className="text-gray-600 text-[15px] leading-relaxed mb-8 flex-1">
+                      "{review.quote}"
+                    </p>
+                    <div className="border-t border-gray-100 pt-6 flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-[#1a1f36] text-white flex items-center justify-center text-[12px] font-bold">
+                        {review.initial}
+                      </div>
+                      <div>
+                        <p className="font-bold text-[14px] text-[#1a1f36]">{review.name}</p>
+                        <p className="text-[12px] text-gray-400">{review.role}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              
+                ))}
+              </div>
+
+              {/* Set 2 (Duplikat untuk ilusi scrolling tanpa akhir) */}
+              <div className="animate-marquee flex gap-6 shrink-0 pl-6">
+                {[
+                  { name: "Rizky K.", role: "Owner, Kopi Sanggar", initial: "RK", quote: "Sangat premium, mudah dimengerti dari pertama lihat." },
+                  { name: "Nadia P.", role: "Barista Lead, Beans Lab", initial: "NP", quote: "Visualnya bersih dan modern, terasa lebih terpercaya." },
+                  { name: "Farhan M.", role: "Owner, Daily Roast", initial: "FM", quote: "Navigasinya enak dan keseluruhan tampilannya lebih engaging." },
+                  { name: "Sinta W.", role: "Owner, Brew & Bake", initial: "SW", quote: "Detail kecilnya rapi, terasa dibuat oleh orang yang paham operasional." },
+                  { name: "Rizky K.", role: "Owner, Kopi Sanggar", initial: "RK", quote: "Sangat premium, mudah dimengerti dari pertama lihat." },
+                  { name: "Nadia P.", role: "Barista Lead, Beans Lab", initial: "NP", quote: "Visualnya bersih dan modern, terasa lebih terpercaya." },
+                  { name: "Farhan M.", role: "Owner, Daily Roast", initial: "FM", quote: "Navigasinya enak dan keseluruhan tampilannya lebih engaging." },
+                  { name: "Sinta W.", role: "Owner, Brew & Bake", initial: "SW", quote: "Detail kecilnya rapi, terasa dibuat oleh orang yang paham operasional." }
+                ].map((review, i) => (
+                  <div key={`set2-${i}`} className="min-w-[300px] md:min-w-[360px] bg-white rounded-[24px] p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex gap-1 text-[#E58B55] text-[18px] mb-6">
+                      <span>★</span><span>★</span><span>★</span><span>★</span><span className="text-gray-200">★</span>
+                    </div>
+                    <p className="text-gray-600 text-[15px] leading-relaxed mb-8 flex-1">
+                      "{review.quote}"
+                    </p>
+                    <div className="border-t border-gray-100 pt-6 flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-[#1a1f36] text-white flex items-center justify-center text-[12px] font-bold">
+                        {review.initial}
+                      </div>
+                      <div>
+                        <p className="font-bold text-[14px] text-[#1a1f36]">{review.name}</p>
+                        <p className="text-[12px] text-gray-400">{review.role}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ── PRICING SECTION ── */}
-      <section id="harga" className="py-40 max-w-7xl mx-auto px-6 lg:px-8 scroll-mt-20 relative">
+{/* ── PRICING SECTION ── */}
+      <section id="harga" className="py-32 max-w-7xl mx-auto px-6 lg:px-8 scroll-mt-20 relative">
         <Reveal>
           <div className="text-center mb-20 max-w-3xl mx-auto">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -593,46 +724,60 @@ export default function KofiloLandingPage() {
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
           
           {/* ── CARD 1: STARTER ── */}
           <Reveal delay={100} direction="right" className="h-full w-full">
-            <div className="bg-[#FAF8F5] border border-gray-200/80 rounded-[32px] p-8 md:p-10 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col justify-between w-full">
+            <div className="bg-[#FCFBF7] border border-gray-200/80 rounded-[40px] p-8 md:p-10 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] hover:-translate-y-4 transition-all duration-500 ease-out h-full flex flex-col justify-between w-full group cursor-pointer">
               <div>
-                <h3 className="text-[24px] font-bold text-[#1a1f36] mb-2">Starter</h3>
-                <p className="text-gray-500 text-[14px] mb-8">Bisnis dasar atau 1 outlet</p>
+                <h3 className="text-[32px] font-serif font-bold text-[#1a1f36] mb-2 tracking-tight">Starter</h3>
+                <p className="text-gray-500 text-[14px] mb-8 font-medium">Bisnis dasar atau 1 outlet</p>
                 
                 <div className="mb-6">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">MULAI DARI</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">MULAI DARI</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-[32px] md:text-[38px] font-bold text-[#1a1f36] tracking-tight">Rp 350.000</span>
-                    <span className="text-gray-500 text-[14px]">/ bulan</span>
+                    <span className="text-[40px] md:text-[44px] font-bold text-[#1a1f36] tracking-tighter leading-none">Rp 199.000</span>
+                    <span className="text-gray-500 text-[14px] font-medium">/ bulan</span>
                   </div>
-                  <p className="text-gray-500 text-[13px] mt-2 leading-relaxed">Solusi POS esensial untuk operasional harian yang rapi dan efisien.</p>
+                  <p className="text-gray-500 text-[14px] mt-4 leading-relaxed font-medium">Solusi POS esensial untuk operasional harian yang rapi dan efisien.</p>
                 </div>
 
-                <div className="w-full h-[1px] bg-gray-200/60 my-6"></div>
+                <div className="w-full h-[1px] bg-gray-200/60 my-8"></div>
 
-                <ul className="space-y-3.5 mb-8 text-[14px] font-medium text-gray-600">
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Transaksi penjualan
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Manajemen produk & stok dasar
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Struk thermal standar
-                  </li>
-                  <li className="flex items-center gap-3 text-gray-400">
-                    <span className="text-gray-300 font-bold">−</span> Tanpa Fitur PWA (QR Order)
-                  </li>
-                  <li className="flex items-center gap-3 text-gray-400">
-                    <span className="text-gray-300 font-bold">−</span> Tanpa Loyalty Hub Otomatis
-                  </li>
+                <ul className="space-y-4 mb-8 text-[14px] font-medium text-gray-600">
+                  {[
+                    "Transaksi penjualan",
+                    "Manajemen produk",
+                    "Cetak struk / invoice",
+                    "Laporan penjualan dasar",
+                    "Multi role",
+                    "Dashboard operasional sederhana"
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <svg className="w-5 h-5 shrink-0 text-[#D5B9A1] mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                  {[
+                    "Tidak ada Loyalty Hub",
+                    "Tidak ada advanced stock management",
+                    "Tidak ada Customer CRM",
+                    "Tidak ada management promo",
+                    "Tidak ada multi store"
+                  ].map((feature, i) => (
+                    <li key={`min-${i}`} className="flex items-start gap-3 text-gray-400">
+                      <svg className="w-5 h-5 shrink-0 text-gray-200 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.75 9.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clipRule="evenodd" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
-              <Link href="/landingpage/checkout?plan=starter" className="block w-full py-4 text-center rounded-full bg-[#F3EFEA] hover:bg-[#1a1f36] hover:text-white text-[#1a1f36] font-bold text-[15px] transition-all duration-300 border border-gray-200/60">
+              <Link href="/landingpage/checkout?plan=starter" className="block w-full py-4 text-center rounded-full border border-gray-200/80 bg-transparent hover:border-gray-400 text-[#1a1f36] font-bold text-[15px] transition-all duration-300">
                 Mulai Starter →
               </Link>
             </div>
@@ -640,46 +785,53 @@ export default function KofiloLandingPage() {
 
           {/* ── CARD 2: PRO (MOST POPULAR) ── */}
           <Reveal delay={200} direction="up" className="h-full w-full">
-            <div className="relative bg-[#FAF8F5] border-2 border-[#1a1f36]/20 rounded-[32px] p-8 md:p-10 shadow-xl transition-all duration-500 h-full flex flex-col justify-between w-full md:-translate-y-4">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#1a1f36] text-white text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-md">
-                ✦ MOST POPULAR
+            <div className="relative bg-[#FCFBF7] border border-gray-200/80 rounded-[40px] p-8 md:p-10 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.2)] transition-all duration-500 ease-out h-full flex flex-col justify-between w-full lg:-translate-y-4 hover:-translate-y-4 lg:hover:-translate-y-8 group cursor-pointer">
+              
+              {/* Badge Most Popular */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#1a1f36] text-[#E58B55] text-[10px] font-bold uppercase tracking-[0.2em] px-5 py-2 rounded-full shadow-lg flex items-center gap-2">
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
+                </svg>
+                MOST POPULAR
               </div>
 
               <div>
-                <h3 className="text-[24px] font-bold text-[#1a1f36] mb-2">Pro</h3>
-                <p className="text-gray-500 text-[14px] mb-8">Bisnis yang sudah ramai dan sering antre</p>
+                <h3 className="text-[32px] font-serif font-bold text-[#1a1f36] mb-2 tracking-tight mt-2">Pro</h3>
+                <p className="text-gray-500 text-[14px] mb-8 font-medium">Bisnis yang sudah ramai dan sering antre</p>
                 
                 <div className="mb-6">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">MULAI DARI</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">MULAI DARI</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-[32px] md:text-[38px] font-bold text-[#1a1f36] tracking-tight">Rp 500.000</span>
-                    <span className="text-gray-500 text-[14px]">/ bulan</span>
+                    <span className="text-[40px] md:text-[44px] font-bold text-[#1a1f36] tracking-tighter leading-none">Rp 249.000</span>
+                    <span className="text-gray-500 text-[14px] font-medium">/ bulan</span>
                   </div>
-                  <p className="text-gray-500 text-[13px] mt-2 leading-relaxed">Paket lengkap untuk bisnis yang berkembang dan butuh loyalitas pelanggan & kontrol stok.</p>
+                  <p className="text-gray-500 text-[14px] mt-4 leading-relaxed font-medium">Paket lengkap untuk bisnis yang berkembang dan butuh loyalitas pelanggan, kontrol stok, dan promosi yang lebih baik.</p>
                 </div>
 
-                <div className="w-full h-[1px] bg-gray-200/60 my-6"></div>
+                <div className="w-full h-[1px] bg-gray-200/60 my-8"></div>
 
-                <ul className="space-y-3.5 mb-8 text-[14px] font-medium text-gray-700">
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Semua fitur Starter
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> PWA QR Ordering (Self-Order)
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Loyalty Hub & Poin Otomatis
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Akses Multi-User (Super Admin)
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Kustomisasi Struk Lengkap
-                  </li>
+                <ul className="space-y-4 mb-8 text-[14px] font-bold text-[#1a1f36]">
+                  {[
+                    "Semua fitur Starter",
+                    "Loyalty Hub",
+                    "Stock Management",
+                    "Customer CRM",
+                    "Management Promo",
+                    "Laporan lebih lengkap / insight penjualan",
+                    "Multi store maksimal 3 outlet",
+                    "Support prioritas"
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <svg className="w-5 h-5 shrink-0 text-[#1a1f36] mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
-              <Link href="/landingpage/checkout?plan=pro" className="block w-full py-4 text-center rounded-full bg-[#1a1f36] text-white font-bold text-[15px] hover:bg-black transition-all duration-300 shadow-lg">
+              <Link href="/landingpage/checkout?plan=pro" className="block w-full py-4 text-center rounded-full bg-[#1a1f36] text-white font-bold text-[15px] hover:bg-black transition-all duration-300 shadow-md">
                 Pilih Pro →
               </Link>
             </div>
@@ -687,38 +839,41 @@ export default function KofiloLandingPage() {
 
           {/* ── CARD 3: ENTERPRISE ── */}
           <Reveal delay={300} direction="left" className="h-full w-full">
-            <div className="bg-[#FAF8F5] border border-gray-200/80 rounded-[32px] p-8 md:p-10 shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col justify-between w-full">
+            <div className="bg-[#FCFBF7] border border-gray-200/80 rounded-[40px] p-8 md:p-10 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] hover:-translate-y-4 transition-all duration-500 ease-out h-full flex flex-col justify-between w-full group cursor-pointer">
               <div>
-                <h3 className="text-[24px] font-bold text-[#1a1f36] mb-2">Enterprise</h3>
-                <p className="text-gray-500 text-[14px] mb-8">Banyak outlet atau kebutuhan khusus</p>
+                <h3 className="text-[32px] font-serif font-bold text-[#1a1f36] mb-2 tracking-tight">Enterprise</h3>
+                <p className="text-gray-500 text-[14px] mb-8 font-medium">Banyak outlet atau kebutuhan khusus</p>
                 
                 <div className="mb-6">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">HARGA</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">HARGA</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-[32px] md:text-[38px] font-bold text-[#1a1f36] tracking-tight">Custom</span>
+                    <span className="text-[40px] md:text-[44px] font-bold text-[#1a1f36] tracking-tighter leading-none">Custom</span>
                   </div>
-                  <p className="text-gray-500 text-[13px] mt-2 leading-relaxed">Solusi fleksibel untuk bisnis multi outlet dan kebutuhan operasional yang lebih kompleks.</p>
+                  <p className="text-gray-500 text-[14px] mt-4 leading-relaxed font-medium">Solusi fleksibel untuk bisnis multi outlet dan kebutuhan operasional yang lebih kompleks.</p>
                 </div>
 
-                <div className="w-full h-[1px] bg-gray-200/60 my-6"></div>
+                <div className="w-full h-[1px] bg-gray-200/60 my-8"></div>
 
-                <ul className="space-y-3.5 mb-8 text-[14px] font-medium text-gray-600">
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Semua fitur Pro
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Multi store tanpa batas
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Custom fitur sesuai kebutuhan
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-emerald-600 font-bold">✓</span> Support prioritas tinggi 24/7
-                  </li>
+                <ul className="space-y-4 mb-8 text-[14px] font-medium text-gray-600">
+                  {[
+                    "Semua fitur Pro",
+                    "Multi store tanpa batas",
+                    "Custom fitur sesuai kebutuhan",
+                    "Penyesuaian flow operasional",
+                    "Support prioritas tinggi",
+                    "Setup konsultatif"
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <svg className="w-5 h-5 shrink-0 text-[#D5B9A1] mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
-              <a href="https://wa.me/6285799854015?text=Halo%20Tim%20Kofilo,%20saya%20tertarik%20dengan%20paket%20Enterprise%20Custom." target="_blank" rel="noopener noreferrer" className="block w-full py-4 text-center rounded-full bg-[#F3EFEA] hover:bg-[#1a1f36] hover:text-white text-[#1a1f36] font-bold text-[15px] transition-all duration-300 border border-gray-200/60">
+              <a href="https://wa.me/6285799854015?text=Halo%20Tim%20Kofilo,%20saya%20tertarik%20dengan%20paket%20Enterprise%20Custom." target="_blank" rel="noopener noreferrer" className="block w-full py-4 text-center rounded-full border border-gray-200/80 bg-transparent hover:border-gray-400 text-[#1a1f36] font-bold text-[15px] transition-all duration-300">
                 Konsultasi Sekarang →
               </a>
             </div>
@@ -783,18 +938,13 @@ export default function KofiloLandingPage() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="py-24 max-w-7xl mx-auto px-6 lg:px-8 relative overflow-hidden z-10">
+      <section className="py-32 max-w-7xl mx-auto px-6 lg:px-8 relative overflow-hidden z-10">
         <Reveal type="scale" className="w-full">
           <div className="bg-[#120d09] rounded-[40px] py-24 px-6 md:px-16 text-center relative overflow-hidden shadow-2xl border border-[#3b2716]/40">
             
             {/* Ambient Glows (Efek Nyala) */}
-            {/* Cahaya di KIRI (Baru ditambahkan) */}
             <div className="absolute -bottom-40 -left-20 md:-left-40 w-[600px] h-[600px] bg-[#8B5024]/40 blur-[130px] rounded-full pointer-events-none animate-[pulse_5s_ease-in-out_infinite] delay-1000"></div>
-
-            {/* Cahaya di KANAN atas */}
             <div className="absolute -top-40 -right-20 md:-right-40 w-[600px] h-[600px] bg-[#8B5024]/40 blur-[130px] rounded-full pointer-events-none animate-pulse"></div>
-            
-            {/* Cahaya berkedip halus di TENGAH belakang teks */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#E58B55]/15 blur-[120px] rounded-full pointer-events-none animate-[pulse_4s_ease-in-out_infinite]"></div>
 
             <h2 className="text-[36px] md:text-[56px] font-bold tracking-tight text-white mb-6 leading-[1.15] relative z-10">
