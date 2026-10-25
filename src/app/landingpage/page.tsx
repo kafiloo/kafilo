@@ -143,13 +143,15 @@ export default function KofiloLandingPage() {
             ))}
           </div>
 
-          {/* KANAN (Button) - Diberi flex-1 dan justify-end agar tetap menempel di kanan */}
+          {/* KANAN (Button Daftar) - Diberi flex-1 dan justify-end agar tetap menempel di kanan */}
           <div className="flex-1 flex items-center justify-end gap-3">
-             <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-white hover:text-black transition-all bg-transparent shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
-                </svg>
-             </button>
+             <a 
+               href="#harga"
+               onClick={(e) => scrollToSection(e, 'harga')}
+               className="bg-[#18181b] hover:bg-black text-white px-5 py-2.5 rounded-full text-[13px] font-bold transition-all shadow-sm cursor-pointer"
+             >
+                Daftar Sekarang
+             </a>
           </div>
         </nav>
       </div>
@@ -184,7 +186,7 @@ export default function KofiloLandingPage() {
 
         {/* ── UI MOCKUP DASHBOARD ── */}
         <Reveal type="slide" delay={600} className="w-full">
-          <div className="mt-20 relative w-full max-w-6xl mx-auto h-[550px] md:h-[800px] perspective-1000">
+          <div id="showcase" className="mt-20 scroll-mt-24 relative w-full max-w-6xl mx-auto h-[550px] md:h-[800px] perspective-1000">
             <div className="absolute inset-0 bg-[#F6F4EC] rounded-[24px] md:rounded-[32px] p-2 md:p-3 shadow-2xl">
               <div className="w-full h-full bg-white rounded-[20px] md:rounded-[24px] overflow-hidden flex flex-col border border-gray-200/80 shadow-inner">
                 

@@ -76,7 +76,7 @@ export default function TermsAndConditions() {
   const storeInitial = storeInfo.name ? storeInfo.name.charAt(0).toUpperCase() : "K";
 
   return (
-    <div className="min-h-screen bg-[#Fdfbf9] text-[#1a1f36] font-sans selection:bg-[#6C4E31] selection:text-white relative">
+    <div className="min-h-screen bg-[#FEFAF1] text-[#1a1f36] font-sans selection:bg-[#6C4E31] selection:text-white relative">
       
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes blob { 0%, 100% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } }
