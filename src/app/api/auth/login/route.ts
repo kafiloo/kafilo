@@ -12,6 +12,23 @@ import {
 } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 
+type LegacyUser = {
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  role: "OWNER" | "SUPER_ADMIN" | "MANAGER" | "CASHIER";
+};
+
+function isMissingAuthColumn(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2022"
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -40,9 +57,29 @@ export async function POST(req: NextRequest) {
       return rateLimitResponse(rateLimit.retryAfter);
     }
 
-    const user = email
-      ? await prisma.user.findUnique({ where: { email } })
-      : await prisma.user.findUnique({ where: { username } });
+    let user;
+    try {
+      user = email
+        ? await prisma.user.findUnique({ where: { email } })
+        : await prisma.user.findUnique({ where: { username } });
+    } catch (error) {
+      if (!isMissingAuthColumn(error) || email) throw error;
+      const legacyUsers = await prisma.$queryRaw<LegacyUser[]>`
+        SELECT "id", "name", "username", "password", "role"::text AS "role"
+        FROM "users"
+        WHERE "username" = ${username}
+        LIMIT 1
+      `;
+      user = legacyUsers[0]
+        ? {
+            ...legacyUsers[0],
+            tenantId: null,
+            email: null,
+            passwordHash: null,
+            emailVerifiedAt: null,
+          }
+        : null;
+    }
 
     if (!user) {
       return NextResponse.json(
