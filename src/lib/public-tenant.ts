@@ -7,6 +7,7 @@ export async function resolvePublicTenant(request: Request) {
     url.searchParams.get("tenant") ||
     url.searchParams.get("slug") ||
     request.headers.get("x-tenant-slug") ||
+    process.env.DEFAULT_TENANT_SLUG ||
     "";
 
   try {

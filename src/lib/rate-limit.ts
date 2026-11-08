@@ -35,6 +35,9 @@ export async function consumeRateLimit(
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
+    if (process.env.NODE_ENV !== "production") {
+      return { allowed: true, retryAfter: 0 };
+    }
     throw new RateLimitConfigurationError();
   }
 

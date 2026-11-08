@@ -8,6 +8,23 @@ export async function GET(request: Request) {
   try {
     const tenant = await resolvePublicTenant(request);
     if (!tenant || tenant.status !== "ACTIVE") {
+      const url = new URL(request.url);
+      const hasTenantSelector =
+        url.searchParams.has("tenant") ||
+        url.searchParams.has("slug") ||
+        request.headers.has("x-tenant-slug") ||
+        Boolean(process.env.DEFAULT_TENANT_SLUG);
+
+      if (!hasTenantSelector) {
+        return NextResponse.json({
+          settings: {
+            storeName: "Kafiloo",
+            description: null,
+            logo: null,
+          },
+        });
+      }
+
       return NextResponse.json({ message: "Tenant tidak ditemukan" }, { status: 404 });
     }
     let settings = await prisma.storeSetting.findFirst({
@@ -37,7 +54,7 @@ export async function GET(request: Request) {
         storeName: "Kafiloo", 
         description: null, 
         logo: null, 
-        pwaBanners: null as any,
+        pwaBanners: null,
         storeMode: "AUTO",   
         openTime: "09:00",   
         closeTime: "00:00",  
@@ -54,7 +71,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ settings });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }

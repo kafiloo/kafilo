@@ -6,6 +6,7 @@ The following server-only variables are required for the merchant auth flows:
 DATABASE_URL=
 JWT_SECRET=
 APP_URL=https://app.kafiloo.com
+DEFAULT_TENANT_SLUG=
 GMAIL_SERVICE_ACCOUNT_EMAIL=
 GMAIL_PRIVATE_KEY=
 GMAIL_DELEGATED_USER=
