@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,12 @@ export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -32,6 +39,7 @@ export async function GET(req: NextRequest) {
         where: {
           status: "COMPLETED",
           createdAt: { gte: startDate, lte: endDate },
+          tenantId,
         },
         orderBy: { createdAt: "asc" },
       });
@@ -62,6 +70,7 @@ export async function GET(req: NextRequest) {
       where: {
         status: "COMPLETED",
         createdAt: { gte: startDate, lte: endDate },
+        tenantId,
       },
     });
 

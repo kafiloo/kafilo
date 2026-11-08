@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import bcrypt from "bcryptjs";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 // ─── GET: Ambil semua akun ────────────────────────────────────
 export async function GET() {
@@ -16,9 +17,16 @@ export async function GET() {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const users = await prisma.user.findMany({
+      where: { tenantId },
       // 🔥 PERUBAHAN 1: Menghapus filter 'CASHIER' agar semua role (Manager/Admin) muncul
       select: {
         id: true,
@@ -44,6 +52,12 @@ export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -87,6 +101,7 @@ export async function POST(req: NextRequest) {
         username,
         password: hashedPassword,
         role: validRole as any, // Simpan role yang dipilih ke database
+        tenantId,
       },
       select: { id: true, name: true, username: true, role: true, createdAt: true },
     });
@@ -105,6 +120,12 @@ export async function DELETE(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
@@ -115,7 +136,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Pastikan target bukan SUPER_ADMIN
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findFirst({ where: { id, tenantId } });
     if (!user) {
       return NextResponse.json({ message: "User tidak ditemukan" }, { status: 404 });
     }

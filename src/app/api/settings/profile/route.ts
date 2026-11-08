@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
@@ -10,13 +11,14 @@ export async function GET() {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  const tenantId = requireTenantId(session.tenantId);
 
   try {
     // Cari data setting pertama. Jika belum ada, buat otomatis
-    let settings = await prisma.storeSetting.findFirst();
+    let settings = await prisma.storeSetting.findFirst({ where: { tenantId } });
     if (!settings) {
       settings = await prisma.storeSetting.create({
-        data: { id: "kofilo-store-1", storeName: "Kofilo Craft Coffee" }
+        data: { id: "kofilo-store-1", storeName: "Kofilo Craft Coffee", tenantId }
       });
     }
     return NextResponse.json({ settings });
@@ -32,15 +34,16 @@ export async function PUT(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  const tenantId = requireTenantId(session.tenantId);
 
   try {
     const body = await req.json();
     const { storeName, description, phone, email, instagram, tiktok, logo, banner } = body;
 
-    let settings = await prisma.storeSetting.findFirst();
+    let settings = await prisma.storeSetting.findFirst({ where: { tenantId } });
     
     if (!settings) {
-      settings = await prisma.storeSetting.create({ data: { id: "kofilo-store-1" } });
+      settings = await prisma.storeSetting.create({ data: { id: "kofilo-store-1", tenantId } });
     }
 
     const updatedSettings = await prisma.storeSetting.update({
