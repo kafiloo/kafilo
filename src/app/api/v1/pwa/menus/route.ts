@@ -6,19 +6,25 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolvePublicTenant } from "@/lib/public-tenant";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tenant = await resolvePublicTenant(request);
+    if (!tenant || tenant.status !== "ACTIVE") {
+      return NextResponse.json({ message: "Tenant tidak ditemukan" }, { status: 404 });
+    }
     // 1. Ambil kategori sesuai urutan Drag & Drop di Superadmin (sortOrder)
     const categories = await prisma.category.findMany({
+      where: { tenantId: tenant.id },
       orderBy: { sortOrder: "asc" }
     });
 
     // 2. Ambil semua produk yang tersedia
     const products = await prisma.product.findMany({
-      where: { isAvailable: true },
+      where: { isAvailable: true, tenantId: tenant.id },
       include: { category: { select: { id: true, name: true, isDrink: true } } }
     });
 
@@ -26,12 +32,13 @@ export async function GET() {
     // A. Hitung penjualan dari Kasir (POS)
     const cashierSoldData = await prisma.orderItem.groupBy({
       by: ['productId'],
+      where: { product: { tenantId: tenant.id } },
       _sum: { quantity: true },
     }).catch(() => []); 
 
     // B. Hitung penjualan dari Customer (PWA)
     const pwaOrders = await prisma.pwaOrder.findMany({
-      where: { status: { not: 'CANCELLED' } },
+      where: { status: { not: 'CANCELLED' }, tenantId: tenant.id },
       select: { items: true }
     }).catch(() => []);
 
