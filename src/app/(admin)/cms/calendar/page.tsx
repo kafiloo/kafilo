@@ -134,7 +134,7 @@ export default function CalendarPage() {
         ? ["Tanggal", "Jumlah Order", "Total Revenue (Rp)"]
         : ["Bulan", "Jumlah Order", "Total Revenue (Rp)"];
       
-      const tableRows: any[] = [];
+      const tableRows: (string | number)[][] = [];
 
       if (isDaily && dailyReport) {
         dailyReport.data.forEach((d) => {
