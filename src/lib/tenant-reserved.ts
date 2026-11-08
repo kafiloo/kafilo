@@ -1,0 +1,17 @@
+export const RESERVED_TENANT_SLUGS = new Set([
+  "admin",
+  "api",
+  "app",
+  "auth",
+  "cashier",
+  "cms",
+  "favicon.ico",
+  "icons",
+  "landingpage",
+  "login",
+  "logout",
+  "public",
+  "register",
+  "www",
+  "_next",
+]);

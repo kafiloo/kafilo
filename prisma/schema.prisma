@@ -17,9 +17,15 @@ datasource db {
 // -------------------------------------------------------------
 
 enum Role {
+  OWNER
   SUPER_ADMIN
   MANAGER
   CASHIER
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum OrderStatus {
@@ -51,16 +57,35 @@ enum PakasirPaymentStatus {
 // USER (Kasir & Admin)
 // -------------------------------------------------------------
 
-model User {
-  id        String   @id @default(cuid())
+model Tenant {
+  id        String       @id @default(cuid())
   name      String
-  username  String   @unique
-  password  String
-  role      Role     @default(CASHIER)
-  createdAt DateTime @default(now())
+  slug      String       @unique
+  status    TenantStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
+  users User[]
+
+  @@map("tenants")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  username        String    @unique
+  password        String
+  tenantId        String?
+  email           String?   @unique
+  passwordHash    String?
+  role            Role      @default(CASHIER)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   orders Order[]
 
+  @@index([tenantId])
   @@map("users")
 }
 
