@@ -6,6 +6,11 @@ import {
   parseMerchantRegistration,
   RegistrationInputError,
 } from "@/lib/merchant-registration";
+import { sendVerificationEmail } from "@/lib/gmail-verification";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { createVerificationToken } from "@/lib/verification-token";
 
 function errorResponse(
@@ -21,6 +26,19 @@ function errorResponse(
 }
 
 export async function POST(request: Request) {
+  const rateLimit = await enforceRateLimit(
+    request,
+    "register",
+    Number(process.env.AUTH_REGISTER_LIMIT || 5),
+    3600,
+  );
+  if (rateLimit instanceof Response) {
+    return rateLimit;
+  }
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfter);
+  }
+
   let input;
   try {
     input = parseMerchantRegistration(await request.json());
@@ -61,6 +79,21 @@ export async function POST(request: Request) {
 
       return createdTenant;
     });
+
+    try {
+      await sendVerificationEmail(input.email, verification.rawToken);
+    } catch (error) {
+      console.error("[auth.register]", {
+        event: "verification_delivery_failed",
+        error_code: "verification_delivery_failed",
+        error: error instanceof Error ? error.name : "unknown",
+      });
+      return errorResponse(
+        503,
+        "verification_delivery_failed",
+        "Email verifikasi gagal dikirim.",
+      );
+    }
 
     return NextResponse.json(
       {

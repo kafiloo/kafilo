@@ -25,8 +25,11 @@ const SESSION_COOKIE = "pos_session";
 // ─── JWT Secret ──────────────────────────────────────────────
 
 function getSessionSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET || "kofilo-pwa-jwt-secret-2026-randomsalt-change-in-production";
-  return new TextEncoder().encode(secret);
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET is required in production.");
+  }
+  return new TextEncoder().encode(secret || "development-only-session-secret");
 }
 
 // ─── Helpers ─────────────────────────────────────────────────

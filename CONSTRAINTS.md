@@ -7,6 +7,8 @@ Last reviewed: 2026-11-09
 
 - No secrets, tokens, passwords, or private keys in source or committed
   environment files.
+- Auth delivery requires the documented Gmail and Upstash server-only
+  environment variables; missing configuration must return an explicit error.
 - No new `@ts-ignore`, `@ts-nocheck`, `eslint-disable`, or equivalent
   suppression without an approved exception.
 - No skipped/deleted tests without a reason recorded in the change summary.

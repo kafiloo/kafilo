@@ -6,6 +6,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { serializeSession } from "@/lib/auth";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
@@ -20,6 +24,20 @@ export async function POST(req: NextRequest) {
         { message: "Email/username dan password wajib diisi" },
         { status: 400 }
       );
+    }
+
+    const rateLimit = await enforceRateLimit(
+      req,
+      "login",
+      Number(process.env.AUTH_LOGIN_LIMIT || 10),
+      60,
+      email || username,
+    );
+    if (rateLimit instanceof Response) {
+      return rateLimit;
+    }
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfter);
     }
 
     const user = email
