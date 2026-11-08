@@ -6,9 +6,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { signPwaToken } from "@/lib/pwa-jwt";
+import { resolvePublicTenant } from "@/lib/public-tenant";
 
 export async function POST(req: NextRequest) {
   try {
+    const tenant = await resolvePublicTenant(req);
+    if (!tenant || tenant.status !== "ACTIVE") {
+      return NextResponse.json({ message: "Tenant tidak ditemukan" }, { status: 404 });
+    }
     const body = await req.json();
     const { phone, name } = body as { phone?: string; name?: string };
 
@@ -40,8 +45,8 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Cek atau buat Customer ---
-    let customer = await prisma.customer.findUnique({
-      where: { phone: cleanPhone },
+    let customer = await prisma.customer.findFirst({
+      where: { phone: cleanPhone, tenantId: tenant.id },
     });
 
     if (!customer) {
@@ -59,6 +64,7 @@ export async function POST(req: NextRequest) {
           phone: cleanPhone,
           name: name.trim(),
           points: 0,
+          tenantId: tenant.id,
         },
       });
     } else {
