@@ -11,17 +11,20 @@ import bcrypt from "bcryptjs";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { username, password } = body;
+    const username = typeof body?.username === "string" ? body.username.trim() : "";
+    const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body?.password === "string" ? body.password : "";
 
-    if (!username || !password) {
+    if ((!username && !email) || !password) {
       return NextResponse.json(
-        { message: "Username dan password wajib diisi" },
+        { message: "Email/username dan password wajib diisi" },
         { status: 400 }
       );
     }
 
-    // Cari user di database
-    const user = await prisma.user.findUnique({ where: { username } });
+    const user = email
+      ? await prisma.user.findUnique({ where: { email } })
+      : await prisma.user.findUnique({ where: { username } });
 
     if (!user) {
       return NextResponse.json(
@@ -31,11 +34,18 @@ export async function POST(req: NextRequest) {
     }
 
     // Verifikasi password
-    const isValid = await bcrypt.compare(password, user.password);
+    const isValid = await bcrypt.compare(password, email ? user.passwordHash ?? "" : user.password);
     if (!isValid) {
       return NextResponse.json(
         { message: "Username atau password salah" },
         { status: 401 }
+      );
+    }
+
+    if (email && !user.emailVerifiedAt) {
+      return NextResponse.json(
+        { error: { code: "email_not_verified", message: "Email belum diverifikasi." } },
+        { status: 403 },
       );
     }
 
@@ -44,6 +54,8 @@ export async function POST(req: NextRequest) {
       id: user.id,
       name: user.name,
       username: user.username,
+      email: user.email ?? undefined,
+      tenantId: user.tenantId ?? undefined,
       role: user.role,
     };
 

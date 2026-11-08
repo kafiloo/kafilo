@@ -1,18 +1,18 @@
 # Auth and Multi-Tenancy Tasks
 
-Status: In progress — Task 1 complete.
+Status: In progress — Tasks 1–5, 7–8, and 11 complete.
 
 - [x] Task 1: Add test infrastructure and baseline checks
 - [x] Task 2: Add tenant and owner schema
 - [x] Task 3: Add centralized slug policy
 - [x] Task 4: Implement path tenant resolver
-- [ ] Task 5: Add tenant IDs to tenant-owned business tables
+- [x] Task 5: Add tenant IDs to tenant-owned business tables
 - [ ] Task 6: Implement tenant-scoped repositories
-- [ ] Task 7: Add token and verification persistence
-- [ ] Task 8: Implement registration transaction
+- [x] Task 7: Add token and verification persistence
+- [x] Task 8: Implement registration transaction
 - [ ] Task 9: Implement Gmail verification delivery and verify endpoint
 - [ ] Task 10: Implement resend verification
-- [ ] Task 11: Implement merchant email login/session
+- [x] Task 11: Implement merchant email login/session
 - [ ] Task 12: Implement Upstash rate-limit adapter
 
 ## Checkpoints

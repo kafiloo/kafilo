@@ -7,6 +7,8 @@ export interface SessionUser {
   id: string;
   name: string;
   username: string;
+  email?: string;
+  tenantId?: string;
   role: string;
 }
 
@@ -51,6 +53,8 @@ export function getSessionClient(): SessionUser | null {
       id: payload.sub || "",
       name: payload.name || "",
       username: payload.username || "",
+      email: payload.email || undefined,
+      tenantId: payload.tenantId || undefined,
       role: payload.role || "",
     };
   } catch {

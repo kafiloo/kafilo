@@ -12,7 +12,9 @@ import { SignJWT, jwtVerify } from "jose";
 export interface SessionUser {
   id: string;
   name: string;
-  username: string;
+  username?: string;
+  email?: string;
+  tenantId?: string;
   role: Role;
 }
 
@@ -47,7 +49,9 @@ export async function getSession(): Promise<SessionUser | null> {
     return {
       id: payload.sub as string,
       name: payload.name as string,
-      username: payload.username as string,
+      username: payload.username as string | undefined,
+      email: payload.email as string | undefined,
+      tenantId: payload.tenantId as string | undefined,
       role: payload.role as Role,
     };
   } catch (e) {
@@ -65,6 +69,8 @@ export async function serializeSession(user: SessionUser): Promise<string> {
   return await new SignJWT({
     name: user.name,
     username: user.username,
+    email: user.email,
+    tenantId: user.tenantId,
     role: user.role,
   })
     .setProtectedHeader({ alg: "HS256" })

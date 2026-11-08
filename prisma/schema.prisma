@@ -66,6 +66,16 @@ model Tenant {
   updatedAt DateTime     @updatedAt
 
   users User[]
+  categories Category[]
+  products Product[]
+  orders Order[]
+  customers Customer[]
+  pwaOrders PwaOrder[]
+  pakasirPayments PakasirPayment[]
+  inventoryItems InventoryItem[]
+  recipeItems RecipeItem[]
+  rewardProducts RewardProduct[]
+  storeSettings StoreSetting[]
 
   @@map("tenants")
 }
@@ -84,9 +94,26 @@ model User {
 
   tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   orders Order[]
+  verificationTokens EmailVerificationToken[]
 
   @@index([tenantId])
   @@map("users")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([revokedAt])
+  @@map("email_verification_tokens")
 }
 
 // -------------------------------------------------------------
@@ -96,12 +123,15 @@ model User {
 model Category {
   id      String  @id @default(cuid())
   name    String  @unique
+  tenantId String?
   isDrink Boolean @default(false)
 
   sortOrder Int       @default(0)
 
   products Product[]
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@index([tenantId])
   @@map("categories")
 }
 
@@ -112,6 +142,7 @@ model Category {
 model Product {
   id          String  @id @default(cuid())
   name        String
+  tenantId    String?
   description String?
   price       Int
   sku         String?
@@ -122,7 +153,9 @@ model Product {
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
   recipeItems RecipeItem[]
+  tenant      Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@index([tenantId])
   @@map("products")
 }
 
@@ -133,6 +166,7 @@ model Product {
 model Order {
   id            String        @id @default(cuid())
   totalAmount   Int
+  tenantId      String?
   paymentMethod PaymentMethod @default(CASH)
   status        OrderStatus   @default(PENDING)
   cashierId     String
@@ -140,7 +174,9 @@ model Order {
 
   cashier    User        @relation(fields: [cashierId], references: [id])
   orderItems OrderItem[]
+  tenant     Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@index([tenantId])
   @@map("orders")
 }
 
@@ -168,13 +204,16 @@ model OrderItem {
 model Customer {
   id        String   @id @default(cuid())
   phone     String   @unique
+  tenantId  String?
   name      String
   points    Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt 
 
   pwaOrders PwaOrder[]
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@index([tenantId])
   @@map("customers")
 }
 
@@ -185,6 +224,7 @@ model Customer {
 model PwaOrder {
   id          String         @id @default(cuid())
   tableId     String
+  tenantId    String?
   customerId  String?
   totalAmount Int
   orderType   String         @default("DINE_IN")
@@ -197,7 +237,9 @@ model PwaOrder {
   customer Customer? @relation(fields: [customerId], references: [id])
 
   pakasirPayments PakasirPayment[]
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@index([tenantId])
   @@map("pwa_orders")
 }
 
@@ -210,6 +252,7 @@ model PwaOrder {
 model PakasirPayment {
   id           String                @id @default(cuid())
   orderId      String                @unique
+  tenantId     String?
   pwaOrderId   String?
   txnId        String                @unique
   method       String
@@ -228,9 +271,11 @@ model PakasirPayment {
   updatedAt    DateTime              @updatedAt
 
   pwaOrder PwaOrder? @relation(fields: [pwaOrderId], references: [id], onDelete: SetNull)
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@index([pwaOrderId])
   @@index([status])
+  @@index([tenantId])
   @@map("pakasir_payments")
 }
 
@@ -254,6 +299,7 @@ enum UnitOfMeasure {
 model InventoryItem {
   id              String          @id @default(cuid())
   name            String
+  tenantId        String?
   sku             String          @unique
   category        String          @default("Umum")
   unit            UnitOfMeasure   @default(PIECE)
@@ -263,7 +309,9 @@ model InventoryItem {
   updatedAt       DateTime        @updatedAt
 
   recipeItems     RecipeItem[]
+  tenant          Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@index([tenantId])
   @@map("inventory_items")
 }
 
@@ -275,12 +323,15 @@ model RecipeItem {
   id              String          @id @default(cuid())
   inventoryId     String
   productId       String
+  tenantId        String?
   quantityNeeded  Int             @default(1)
 
   inventory       InventoryItem   @relation(fields: [inventoryId], references: [id], onDelete: Restrict)
   product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tenant          Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@unique([inventoryId, productId])
+  @@index([tenantId])
   @@map("recipe_items")
 }
 
@@ -291,17 +342,21 @@ model RecipeItem {
 model RewardProduct {
   id          String   @id @default(cuid())
   name        String
+  tenantId    String?
   code        String   @unique
   pointCost   Int
   qtyExchange Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
+  @@index([tenantId])
   @@map("reward_products")
 }
 
 model StoreSetting {
   id          String   @id @default("kofilo-store-1")
+  tenantId    String?
   storeName   String   @default("Craft Coffee")
   description String?  @db.Text
   phone       String?
@@ -345,4 +400,7 @@ model StoreSetting {
   storeMode String? @default("AUTO")
 
   updatedAt   DateTime @updatedAt
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
 }
