@@ -23,9 +23,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "Customer ID not found" }, { status: 400 });
     }
 
-    // 2. Tarik Semua PwaOrder milik Customer ini
+    const customer = await prisma.customer.findUnique({
+      where: { id: payload.sub },
+      select: { tenantId: true },
+    });
+    if (!customer?.tenantId) {
+      return NextResponse.json({ message: "Customer tenant context not found" }, { status: 403 });
+    }
+
+    // 2. Tarik Semua PwaOrder milik Customer ini dalam tenant yang sama
     const orders = await prisma.pwaOrder.findMany({
-      where: { customerId: payload.sub },
+      where: { customerId: payload.sub, tenantId: customer.tenantId },
       orderBy: { createdAt: 'desc' }, // Urutkan dari yang paling baru
     });
 

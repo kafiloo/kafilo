@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const customer = await prisma.customer.findUnique({
+    const customer = await prisma.customer.findFirst({
       where: { id: customerPayload.sub },
       select: {
         id: true,

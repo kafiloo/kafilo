@@ -20,6 +20,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Unauthorized: Token tidak valid atau expired" }, { status: 401 });
     }
 
+    if (!customerPayload.sub) {
+      return NextResponse.json({ message: "Customer tidak valid" }, { status: 400 });
+    }
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerPayload.sub },
+      select: { tenantId: true },
+    });
+    if (!customer?.tenantId) {
+      return NextResponse.json({ message: "Customer tenant context not found" }, { status: 403 });
+    }
+
     // --- Validasi Body ---
     const body = await req.json();
     const { tableId, items } = body as {
@@ -71,7 +82,7 @@ export async function POST(req: NextRequest) {
     // A. Cek produk biasa
     if (uniqueNormalIds.length > 0) {
       const dbProducts = await prisma.product.findMany({
-        where: { id: { in: uniqueNormalIds }, isAvailable: true },
+        where: { id: { in: uniqueNormalIds }, isAvailable: true, tenantId: customer.tenantId },
         select: { id: true, price: true, name: true },
       });
 
@@ -84,7 +95,7 @@ export async function POST(req: NextRequest) {
     // B. Cek produk reward
     if (uniqueRewardIds.length > 0) {
       const dbRewards = await prisma.rewardProduct.findMany({
-        where: { id: { in: uniqueRewardIds } },
+        where: { id: { in: uniqueRewardIds }, tenantId: customer.tenantId },
         select: { id: true, name: true },
       });
 
@@ -95,8 +106,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 🔥 AMBIL SETTING DARI SUPERADMIN (DATABASE) 🔥
-    const storeSetting = await prisma.storeSetting.findUnique({
-      where: { id: "kofilo-store-1" },
+    const storeSetting = await prisma.storeSetting.findFirst({
+      where: { id: "kofilo-store-1", tenantId: customer.tenantId },
     });
 
     let subTotalAmount = 0; 
@@ -136,15 +147,12 @@ export async function POST(req: NextRequest) {
     const finalTotalAmount = subTotalAmount + taxAmount + serviceAmount;
 
     // 🔒 Validasi customerId sebelum create
-    if (!customerPayload.sub) {
-      return NextResponse.json({ message: "Customer tidak valid" }, { status: 400 });
-    }
-
     // --- Buat PwaOrder ---
     const pwaOrder = await prisma.pwaOrder.create({
       data: {
         tableId,
         customerId: customerPayload.sub,
+        tenantId: customer.tenantId,
         totalAmount: finalTotalAmount, // Menggunakan total hitungan Server
         status: "PENDING_CONFIRMATION",
         paymentMethod: "QRIS",
