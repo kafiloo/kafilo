@@ -100,6 +100,46 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error("[POST /api/auth/login]", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    const errorCode =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      typeof error.code === "string"
+        ? error.code
+        : "";
+
+    if (errorCode.startsWith("P")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "database_unavailable",
+            message: "Layanan login sedang tidak tersedia. Coba lagi nanti.",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
+    if (error instanceof Error && error.message.includes("JWT_SECRET")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "auth_configuration_error",
+            message: "Layanan login belum dikonfigurasi dengan benar.",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: {
+          code: "login_failed",
+          message: "Login tidak dapat diproses. Coba lagi nanti.",
+        },
+      },
+      { status: 500 },
+    );
   }
 }
