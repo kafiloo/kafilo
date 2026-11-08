@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (email && !user.emailVerifiedAt) {
+    if (user.passwordHash && user.email && !user.emailVerifiedAt) {
       return NextResponse.json(
         { error: { code: "email_not_verified", message: "Email belum diverifikasi." } },
         { status: 403 },

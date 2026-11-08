@@ -2,6 +2,7 @@ import PDFDocument from "pdfkit";
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -168,6 +169,12 @@ export async function GET(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   const requestedPeriod = new URL(req.url).searchParams.get("month") ?? String(new Date().getFullYear());
   const periodMatch = /^(\d{4})(?:-(0[1-9]|1[0-2]))?$/.exec(requestedPeriod);
@@ -190,11 +197,15 @@ export async function GET(req: NextRequest) {
         where: {
           status: "COMPLETED",
           createdAt: { gte: startDate, lt: endDate },
+          tenantId,
         },
         select: { createdAt: true, totalAmount: true },
         orderBy: { createdAt: "asc" },
       }),
-      prisma.storeSetting.findFirst({ select: { storeName: true, address: true } }),
+      prisma.storeSetting.findFirst({
+        where: { tenantId },
+        select: { storeName: true, address: true },
+      }),
     ]);
 
     const reportMap = new Map<string, ReportRow>();

@@ -16,13 +16,11 @@ describe("rate limit keys", () => {
   });
 
   it("allows local requests when Upstash is not configured", async () => {
-    vi.stubEnv("NODE_ENV", "test");
     vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
     vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
 
-    await expect(consumeRateLimit("test-key", 5, 60)).resolves.toEqual({
+    await expect(consumeRateLimit("fallback-key", 5, 60)).resolves.toMatchObject({
       allowed: true,
-      retryAfter: 0,
     });
   });
 });

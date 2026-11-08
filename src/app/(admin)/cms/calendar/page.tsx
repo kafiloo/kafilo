@@ -68,7 +68,18 @@ export default function CalendarPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchMonthly(); setSelectedMonth(null); setDailyReport(null); }, [fetchMonthly]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fetchMonthly();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchMonthly]);
+
+  const changeYear = (update: (year: number) => number) => {
+    setSelectedMonth(null);
+    setDailyReport(null);
+    setYear(update);
+  };
 
   const handleMonthClick = (monthIndex: number) => {
     const monthStr = `${year}-${String(monthIndex).padStart(2, "0")}`;
@@ -205,11 +216,11 @@ export default function CalendarPage() {
       </div>
 
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={() => setYear(y => y - 1)} className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+        <button onClick={() => changeYear(y => y - 1)} className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
         </button>
         <span className="text-[24px] font-black text-[#1a1f36] tracking-tight w-20 text-center">{year}</span>
-        <button onClick={() => setYear(y => y + 1)} disabled={year >= today.getFullYear()}
+        <button onClick={() => changeYear(y => y + 1)} disabled={year >= today.getFullYear()}
           className="w-9 h-9 flex items-center justify-center bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
         </button>

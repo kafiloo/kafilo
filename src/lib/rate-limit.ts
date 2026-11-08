@@ -10,6 +10,35 @@ export type RateLimitResult = {
   retryAfter: number;
 };
 
+const localCounters = new Map<string, { count: number; resetAt: number }>();
+
+function consumeLocalRateLimit(
+  key: string,
+  limit: number,
+  windowSeconds: number,
+): RateLimitResult {
+  const now = Date.now();
+  const current = localCounters.get(key);
+  const counter =
+    current && current.resetAt > now
+      ? current
+      : { count: 0, resetAt: now + windowSeconds * 1000 };
+
+  counter.count += 1;
+  localCounters.set(key, counter);
+
+  if (localCounters.size > 10_000) {
+    for (const [storedKey, stored] of localCounters) {
+      if (stored.resetAt <= now) localCounters.delete(storedKey);
+    }
+  }
+
+  return {
+    allowed: counter.count <= limit,
+    retryAfter: Math.max(1, Math.ceil((counter.resetAt - now) / 1000)),
+  };
+}
+
 function getClientIp(request: Request): string {
   return (
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -35,10 +64,8 @@ export async function consumeRateLimit(
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
-    if (process.env.NODE_ENV !== "production") {
-      return { allowed: true, retryAfter: 0 };
-    }
-    throw new RateLimitConfigurationError();
+    console.warn("[rate-limit] Upstash belum dikonfigurasi; memakai fallback in-memory.");
+    return consumeLocalRateLimit(key, limit, windowSeconds);
   }
 
   const response = await fetch(`${url.replace(/\/$/, "")}/pipeline`, {

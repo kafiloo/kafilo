@@ -22,3 +22,8 @@ must have domain-wide delegation for the Gmail send scope and
 Optional rate-limit overrides are `AUTH_LOGIN_LIMIT`,
 `AUTH_REGISTER_LIMIT`, `AUTH_RESEND_LIMIT`, and `AUTH_CHECK_SLUG_LIMIT`.
 They default to 10/minute, 5/hour, 3/hour, and 30/minute respectively.
+
+If Upstash is temporarily unavailable or not configured, public auth endpoints
+use a process-local fallback limiter so login and registration remain available.
+The fallback is not distributed; configure both Upstash variables in production
+for consistent limits across instances.
