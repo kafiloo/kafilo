@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
@@ -17,13 +18,19 @@ export async function GET(
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const { id } = await params;
 
     // 1. Cari di tabel Order (Kasir Offline) terlebih dahulu
-    const posOrder = await prisma.order.findUnique({
-      where: { id },
+    const posOrder = await prisma.order.findFirst({
+      where: { id, tenantId },
       include: {
         cashier: { select: { name: true } },
         orderItems: {
@@ -60,8 +67,8 @@ export async function GET(
     }
 
     // 2. Jika tidak ketemu di POS, cari di tabel PwaOrder (Pesanan Online)
-    const pwaOrder = await prisma.pwaOrder.findUnique({
-      where: { id },
+    const pwaOrder = await prisma.pwaOrder.findFirst({
+      where: { id, tenantId },
       include: {
         customer: { select: { name: true } },
       },
