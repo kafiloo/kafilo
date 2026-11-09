@@ -60,7 +60,10 @@ export async function GET(req: NextRequest) {
       { id: "cust-dummy-2", memberId: "LOY-0002", name: "Sarah Johnson", phone: "6281234567891", points: 120, lastTransaction: "Yesterday, 15:45" },
       { id: "cust-dummy-3", memberId: "LOY-0003", name: "Budi Santoso", phone: "6281234567892", points: 0, lastTransaction: "2 days ago, 09:15" },
     ];
-    return NextResponse.json({ members: dummyMembers, totalItems: dummyMembers.length, totalPages: 1, currentPage: page });
+    return NextResponse.json({
+      members: dummyMembers,
+      pagination: { currentPage: page, totalPages: 1, totalItems: dummyMembers.length, itemsPerPage: 10 },
+    });
   }
 
   try {
