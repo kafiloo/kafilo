@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     const uniqueNormalIds = [...new Set(normalIds)];
     const uniqueRewardIds = [...new Set(rewardIds)];
 
-    let productPriceMap = new Map<string, number>();
+    const productPriceMap = new Map<string, number>();
     
     // A. Cek produk biasa
     if (uniqueNormalIds.length > 0) {

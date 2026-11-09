@@ -332,7 +332,7 @@ export default function CashierClient({ cashierName }: { cashierName: string }) 
         quantity: item.quantity,
       }));
 
-      let cleanPhone = phoneNumber ? phoneNumber.replace(/\D/g, '') : undefined;
+      const cleanPhone = phoneNumber ? phoneNumber.replace(/\D/g, '') : undefined;
       
       const res = await fetch("/api/orders", {
         method: "POST",

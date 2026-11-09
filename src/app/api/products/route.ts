@@ -282,7 +282,7 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
     
-    let updateData: any = {
+    const updateData: any = {
       ...(body.name !== undefined && { name: body.name }),
       ...(body.description !== undefined && { description: body.description || null }),
       ...(body.price !== undefined && { price: Number(body.price) }),

@@ -1,0 +1,447 @@
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\categories\page.tsx
+   57:5    error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\categories\page.tsx:57:5
+  55 |
+  56 |   useEffect(() => {
+> 57 |     fetchCategories();
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  58 |   }, []);
+  59 |
+  60 |   // GöÇGöÇ BUKA MODAL FORM GöÇGöÇ  react-hooks/set-state-in-effect
+  104:19   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  125:19   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  163:48   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+  163:64   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+  296:93   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+  296:117  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\dashboard\DashboardDatePicker.tsx
+  22:16  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\inventory\page.tsx
+  104:5    error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\inventory\page.tsx:104:5
+  102 |
+  103 |   useEffect(() => {
+> 104 |     fetchItems(debouncedSearch);
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  105 |   }, [debouncedSearch]);
+  106 |
+  107 |   // GöÇGöÇ Close kebab on outside click GöÇGöÇ  react-hooks/set-state-in-effect
+  169:19   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  208:19   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  236:19   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  628:84   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react/no-unescaped-entities
+  628:102  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react/no-unescaped-entities
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\loyalty\rewards\page.tsx
+  66:21  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\loyalty\rewards\page.tsx:66:21
+  64 |   }, [debouncedSearch]);
+  65 |
+> 66 |   useEffect(() => { fetchRewards(); }, [fetchRewards]);
+     |                     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  67 |
+  68 |   // CRUD Handlers
+  69 |   const openAddModal = () => {  react-hooks/set-state-in-effect
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\products\page.tsx
+   61:106  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+   61:127  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  138:22   warning  'setCatLoading' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  197:5    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\products\page.tsx:197:5
+  195 |     }
+  196 |     initData();
+> 197 |     fetchInventoryItems();
+      |     ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  198 |   }, [fetchCategories, fetchInventoryItems]);
+  199 |
+  200 |   const filteredProducts = products.filter(  react-hooks/set-state-in-effect
+  362:20   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  466:33   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  584:36   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @next/next/no-img-element
+  722:27   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @next/next/no-img-element
+  769:105  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react/no-unescaped-entities
+  769:120  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react/no-unescaped-entities
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\settings\financial\page.tsx
+  70:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\settings\points\page.tsx
+  70:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\settings\profile\page.tsx
+   74:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  116:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\settings\pwa\page.tsx
+   17:10  warning  'isStoreOpen' is assigned a value but never used                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   17:23  warning  'setIsStoreOpen' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   83:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  166:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  166:21  warning  img elements must have an alt prop, either with meaningful text, or an empty string for decorative images                                                                                                                                                                                jsx-a11y/alt-text
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\settings\receipt\page.tsx
+  61:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(admin)\cms\users\page.tsx
+   95:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+  114:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(auth)\login\page.tsx
+   83:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   94:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  127:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\cart\page.tsx
+   84:5   error  'intervalId' is never reassigned. Use 'const' instead  prefer-const
+  100:35  error  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  119:33  error  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\history\page.tsx
+   13:10  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+   18:9   warning  'router' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   27:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\history\page.tsx:27:7
+  25 |   useEffect(() => {
+  26 |     if (!isLoggedIn() || !customer?.token) {
+> 27 |       setLoading(false);
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |       return;
+  29 |     }
+  30 |  react-hooks/set-state-in-effect
+  113:57  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  155:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\menu\page.tsx
+   53:33  warning  'setCustomer' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   60:23  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+   67:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\menu\page.tsx:67:5
+  65 |   // GöÇGöÇ RADAR TOKO GöÇGöÇ
+  66 |   useEffect(() => {
+> 67 |     setIsMounted(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  68 |     let intervalId: NodeJS.Timeout;
+  69 |
+  70 |     const checkStoreAndFetchInfo = async () => {                                                                                                                                                                                                                react-hooks/set-state-in-effect
+  123:5   error    'intervalId' is never reassigned. Use 'const' instead                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         prefer-const
+  128:57  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  225:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\menu\page.tsx:225:7
+  223 |     const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+  224 |     if (justLoggedIn === "true") {
+> 225 |       setToast({ show: true, title: 'Selamat Datang!', message: `Anda berhasil masuk ke ${storeInfo.name} Loyalty.` });
+      |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  226 |       sessionStorage.removeItem("justLoggedIn");
+  227 |       setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000);
+  228 |     }  react-hooks/set-state-in-effect
+  316:30  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @next/next/no-img-element
+  355:41  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  368:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  491:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @next/next/no-img-element
+  531:42  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @next/next/no-img-element
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\order-status\[orderId]\page.tsx
+  43:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\order-status\page.tsx
+  56:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\order-status\page.tsx:56:5
+  54 |   // Fetch pertama kali
+  55 |   useEffect(() => {
+> 56 |     fetchStatus();
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  57 |   }, [orderId]);
+  58 |
+  59 |   // Short polling setiap 5 detik (5000 ms) sesuai instruksi task  react-hooks/set-state-in-effect
+  57:6  warning  React Hook useEffect has a missing dependency: 'fetchStatus'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  66:6  warning  React Hook useEffect has a missing dependency: 'fetchStatus'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\page.tsx
+   84:5   error    'intervalId' is never reassigned. Use 'const' instead                                                                                                                                                                                                                                    prefer-const
+  105:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(customer)\[tableId]\redeem\page.tsx
+   14:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+   89:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(pos)\cashier\CashierClient.tsx
+   100:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   103:68  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   106:9   warning  'router' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   144:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(pos)\cashier\CashierClient.tsx:144:5
+  142 |
+  143 |   useEffect(() => {
+> 144 |     fetchOnlineOrders(); 
+      |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  145 |     const interval = setInterval(fetchOnlineOrders, 10000);
+  146 |     return () => clearInterval(interval);
+  147 |   }, [fetchOnlineOrders]);                react-hooks/set-state-in-effect
+   224:63  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   228:55  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   249:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(pos)\cashier\CashierClient.tsx:249:7
+  247 |     const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+  248 |     if (justLoggedIn === "true") {
+> 249 |       setToast({
+      |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  250 |         show: true,
+  251 |         type: 'success',
+  252 |         title: 'Login Berhasil!',  react-hooks/set-state-in-effect
+   267:10  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\(pos)\cashier\CashierClient.tsx:267:10
+  265 |   useEffect(() => {
+  266 |      if (categories.length > 0 && !activeCategory) {
+> 267 |          setActiveCategory(categories[0]);
+      |          ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  268 |      }
+  269 |   }, [categories, activeCategory]);
+  270 |                          react-hooks/set-state-in-effect
+   360:19  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   420:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+   489:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @next/next/no-img-element
+  1308:70  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\auth\debug\route.ts
+  4:27  warning  'req' is defined but never used  @typescript-eslint/no-unused-vars
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\categories\route.ts
+   97:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\inventory\route.ts
+  52:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\loyalty\route.ts
+  70:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\orders\route.ts
+   76:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   91:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\pos\history\[id]\route.ts
+  80:88  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\pos\history\route.ts
+  47:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\products\route.ts
+  111:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  165:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  285:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\settings\pwa\route.ts
+  24:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  50:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\users\route.ts
+  103:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\v1\pos\orders\[orderId]\status\route.ts
+  142:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\v1\pwa\history\route.ts
+  18:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  41:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\v1\pwa\menus\route.ts
+  48:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\v1\pwa\orders\route.ts
+  172:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\api\v1\pwa\rewards\route.ts
+  48:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\landingpage\berhasil\page.tsx
+  14:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\landingpage\berhasil\page.tsx:14:5
+  12 |
+  13 |   useEffect(() => {
+> 14 |     setOrder(loadOrder());
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  15 |   }, []);
+  16 |
+  17 |   // Auto-redirect kembali ke landing page  react-hooks/set-state-in-effect
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\landingpage\kebijakan-privasi\page.tsx
+   97:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  199:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\landingpage\nota\page.tsx
+  13:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\landingpage\nota\page.tsx:13:5
+  11 |   useEffect(() => {
+  12 |     const o = loadOrder();
+> 13 |     setOrder(o);
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  14 |     setPlan(o ? getPlan(o.planId) : undefined);
+  15 |   }, []);
+  16 |  react-hooks/set-state-in-effect
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\landingpage\page.tsx
+   127:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+   277:83  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   277:90  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   659:23  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   659:38  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   691:23  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   691:38  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+   980:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  1006:19  error    Do not use an `<a>` element to navigate to `/landingpage/syarat-ketentuan/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages                                                                                                       @next/next/no-html-link-for-pages
+  1006:19  error    Do not use an `<a>` element to navigate to `/landingpage/syarat-ketentuan/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages                                                                                                       @next/next/no-html-link-for-pages
+  1007:19  error    Do not use an `<a>` element to navigate to `/landingpage/kebijakan-privasi/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages                                                                                                      @next/next/no-html-link-for-pages
+  1007:19  error    Do not use an `<a>` element to navigate to `/landingpage/kebijakan-privasi/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages                                                                                                      @next/next/no-html-link-for-pages
+
+e:\KAFILOO\sekarang\kafilo-main\src\app\landingpage\syarat-ketentuan\page.tsx
+  100:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  190:44  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  190:63  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  218:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+e:\KAFILOO\sekarang\kafilo-main\src\components\admin\Sidebar.tsx
+  45:46  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\components\admin\Sidebar.tsx:45:46
+  43 |   // Auto-expand Dropdown jika sedang berada di dalam halamannya
+  44 |   useEffect(() => {
+> 45 |     if (pathname.startsWith("/cms/loyalty")) setLoyaltyOpen(true);
+     |                                              ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  46 |     if (pathname.startsWith("/cms/settings")) setSettingsOpen(true);
+  47 |   }, [pathname]);
+  48 |                                    react-hooks/set-state-in-effect
+  53:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+e:\KAFILOO\sekarang\kafilo-main\src\components\admin\Sidebar.tsx:53:7
+  51 |     const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+  52 |     if (justLoggedIn === "true") {
+> 53 |       setToast({ show: true, message: `Welcome back, ${user.name.split(" ")[0]}!` });
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  54 |       sessionStorage.removeItem("justLoggedIn");
+  55 |       setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 4000);
+  56 |     }  react-hooks/set-state-in-effect
+  82:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @next/next/no-img-element
+
+e:\KAFILOO\sekarang\kafilo-main\src\components\customer\AuthDrawer.tsx
+  72:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+G£û 135 problems (97 errors, 38 warnings)
+
