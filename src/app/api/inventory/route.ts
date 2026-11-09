@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -58,7 +58,13 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tenantId) {
-    return NextResponse.json({ items: [] });
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyItems = [
+      { id: "inv-dummy-1", name: "Biji Kopi Arabica", sku: "INV-0001", category: "Bahan Baku", unit: "KILOGRAM", currentStock: 15, minThreshold: 3 },
+      { id: "inv-dummy-2", name: "Susu UHT Full Cream", sku: "INV-0002", category: "Susu", unit: "LITER", currentStock: 20, minThreshold: 5 },
+      { id: "inv-dummy-3", name: "Gula Pasir", sku: "INV-0003", category: "Bahan Baku", unit: "KILOGRAM", currentStock: 10, minThreshold: 2 },
+    ];
+    return NextResponse.json({ items: dummyItems });
   }
 
   try {

@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -33,7 +33,17 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tenantId) {
-    return NextResponse.json({ settings: null });
+    // Dummy data untuk development / preview tanpa tenant
+    return NextResponse.json({
+      settings: {
+        id: "kofilo-store-1",
+        storeName: "Kafiloo Craft Coffee",
+        receiptFooter: "Terima kasih atas kunjungannya!",
+        wifiName: null,
+        wifiPassword: null,
+        tenantId: "dummy-tenant",
+      },
+    });
   }
 
   try {

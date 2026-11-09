@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -72,7 +72,49 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tenantId) {
-    return NextResponse.json({ products: [], sold: [] });
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyProducts = [
+      {
+        id: "prod-dummy-1",
+        name: "Espresso",
+        description: "Kopi hitam pekat",
+        price: 22000,
+        sku: "COF-001",
+        image: null,
+        isAvailable: true,
+        categoryId: "cat-dummy-1",
+        category: { id: "cat-dummy-1", name: "Coffee", isDrink: false },
+        sold: 45,
+        recipeItems: [],
+      },
+      {
+        id: "prod-dummy-2",
+        name: "Latte",
+        description: "Kopi dengan susu steamed",
+        price: 28000,
+        sku: "COF-002",
+        image: null,
+        isAvailable: true,
+        categoryId: "cat-dummy-1",
+        category: { id: "cat-dummy-1", name: "Coffee", isDrink: true },
+        sold: 62,
+        recipeItems: [],
+      },
+      {
+        id: "prod-dummy-3",
+        name: "Cappuccino",
+        description: "Kopi dengan foam susu",
+        price: 30000,
+        sku: "COF-003",
+        image: null,
+        isAvailable: true,
+        categoryId: "cat-dummy-1",
+        category: { id: "cat-dummy-1", name: "Coffee", isDrink: true },
+        sold: 38,
+        recipeItems: [],
+      },
+    ];
+    return NextResponse.json({ products: dummyProducts, sold: [] });
   }
 
   const categoryId = searchParams.get("categoryId");

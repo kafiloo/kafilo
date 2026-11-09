@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -59,7 +59,13 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tenantId) {
-    return NextResponse.json({ rewards: [] });
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyRewards = [
+      { id: "rew-dummy-1", name: "Voucher Diskon 10%", code: "RWD-001", pointCost: 100, qtyExchange: 5 },
+      { id: "rew-dummy-2", name: "Kopi Gratis", code: "RWD-002", pointCost: 50, qtyExchange: 10 },
+      { id: "rew-dummy-3", name: "Voucher Makan Gratis", code: "RWD-003", pointCost: 200, qtyExchange: 2 },
+    ];
+    return NextResponse.json({ rewards: dummyRewards });
   }
 
   try {

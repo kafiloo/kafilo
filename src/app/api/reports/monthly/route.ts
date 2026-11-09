@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -35,13 +35,22 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tenantId) {
+    // Dummy data untuk development / preview tanpa tenant
+    const currentYear = new Date().getFullYear();
+    const dummyMonthlyData = Array.from({ length: 12 }, (_, i) => ({
+      month: i + 1,
+      count: Math.floor(Math.random() * 50) + 10,
+      revenue: Math.floor(Math.random() * 5000000) + 1000000,
+    }));
+    const totalOrders = dummyMonthlyData.reduce((s, d) => s + d.count, 0);
+    const totalRevenue = dummyMonthlyData.reduce((s, d) => s + d.revenue, 0);
     return NextResponse.json({
       mode: "monthly",
-      year: new Date().getFullYear(),
-      totalOrders: 0,
-      totalRevenue: 0,
-      avgTicket: 0,
-      data: [],
+      year: currentYear,
+      totalOrders,
+      totalRevenue,
+      avgTicket: totalOrders > 0 ? Math.floor(totalRevenue / totalOrders) : 0,
+      data: dummyMonthlyData,
     });
   }
 

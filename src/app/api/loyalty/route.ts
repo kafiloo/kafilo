@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -53,7 +53,14 @@ export async function GET(req: NextRequest) {
     if (id) {
       return NextResponse.json({ message: "Customer tidak ditemukan" }, { status: 404 });
     }
-    return NextResponse.json({ members: [], totalItems: 0, totalPages: 0 });
+    const page = Number(searchParams.get("page") ?? 1);
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyMembers = [
+      { id: "cust-dummy-1", memberId: "LOY-0001", name: "Alex Morgan", phone: "6281234567890", points: 50, lastTransaction: "Today, 10:30" },
+      { id: "cust-dummy-2", memberId: "LOY-0002", name: "Sarah Johnson", phone: "6281234567891", points: 120, lastTransaction: "Yesterday, 15:45" },
+      { id: "cust-dummy-3", memberId: "LOY-0003", name: "Budi Santoso", phone: "6281234567892", points: 0, lastTransaction: "2 days ago, 09:15" },
+    ];
+    return NextResponse.json({ members: dummyMembers, totalItems: dummyMembers.length, totalPages: 1, currentPage: page });
   }
 
   try {

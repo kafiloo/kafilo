@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -34,7 +34,45 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tenantId) {
-    return NextResponse.json({ settings: null });
+    // Dummy data untuk development / preview tanpa tenant
+    return NextResponse.json({
+      settings: {
+        id: "kofilo-store-1",
+        storeName: "Kafiloo Craft Coffee",
+        description: "Specialty Coffee & Modern Indonesian",
+        phone: null,
+        email: null,
+        instagram: null,
+        tiktok: null,
+        logo: null,
+        banner: null,
+        address: null,
+        mapsUrl: null,
+        operatingHours: null,
+        isStoreOpen: true,
+        taxRate: 0,
+        serviceCharge: 0,
+        minOrderAmount: 0,
+        acceptCash: true,
+        acceptQris: true,
+        acceptTransfer: false,
+        loyaltyEnabled: true,
+        rewardPerAmount: 10000,
+        pointsEarned: 1,
+        registrationPoints: 0,
+        pointsExpiryDays: 365,
+        receiptFooter: "Terima kasih atas kunjungannya!",
+        wifiName: null,
+        wifiPassword: null,
+        pwaBanners: [],
+        pwaEnableTakeaway: true,
+        openTime: "09:00",
+        closeTime: "00:00",
+        storeMode: "AUTO",
+        updatedAt: new Date().toISOString(),
+        tenantId: "dummy-tenant",
+      },
+    });
   }
 
   try {

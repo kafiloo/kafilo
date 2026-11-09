@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       searchParams.get("tenant") ||
       searchParams.get("slug") ||
       process.env.DEFAULT_TENANT_SLUG ||
-      "legacy-kafiloo";
+      "kafiloo";
     try {
       const tenant = await prisma.tenant.findUnique({
         where: { slug },
@@ -31,7 +31,15 @@ export async function GET(req: NextRequest) {
   }
 
   if (!tenantId) {
-    return NextResponse.json({ settings: null });
+    // Dummy data untuk development / preview tanpa tenant
+    return NextResponse.json({
+      settings: {
+        storeMode: "AUTO",
+        openTime: "09:00",
+        closeTime: "00:00",
+        pwaBanners: [],
+      },
+    });
   }
 
   try {
