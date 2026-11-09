@@ -5,10 +5,34 @@ import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await getSession();
+  const { searchParams } = new URL(req.url);
   if (!session || session.role !== "SUPER_ADMIN") return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  const tenantId = requireTenantId(session.tenantId);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "legacy-kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    return NextResponse.json({ settings: null });
+  }
 
   try {
     const settings = await prisma.storeSetting.findFirst({

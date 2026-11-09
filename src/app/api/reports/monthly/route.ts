@@ -12,18 +12,40 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "legacy-kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
   }
-  let tenantId: string;
-  try {
-    tenantId = requireTenantId(session.tenantId);
-  } catch {
-    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+
+  if (!tenantId) {
+    return NextResponse.json({
+      mode: "monthly",
+      year: new Date().getFullYear(),
+      totalOrders: 0,
+      totalRevenue: 0,
+      avgTicket: 0,
+      data: [],
+    });
   }
 
   try {
-    const { searchParams } = new URL(req.url);
     const yearParam = searchParams.get("year");
     const monthParam = searchParams.get("month"); // format: YYYY-MM, untuk daily detail
 

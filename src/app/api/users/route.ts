@@ -11,17 +11,36 @@ import bcrypt from "bcryptjs";
 import { requireTenantId } from "@/lib/tenant-repository";
 
 // ─── GET: Ambil semua akun ────────────────────────────────────
-export async function GET() {
+export async function GET(req: NextRequest) {
   // TODO: Add Auth check here — verifikasi session & role SUPER_ADMIN
   const session = await getSession();
+  const { searchParams } = new URL(req.url);
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  let tenantId: string;
-  try {
-    tenantId = requireTenantId(session.tenantId);
-  } catch {
-    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "legacy-kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    return NextResponse.json({ users: [] });
   }
 
   try {

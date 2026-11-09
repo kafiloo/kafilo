@@ -48,14 +48,33 @@ async function generateSku(categoryId: string, tenantId: string): Promise<string
 // ─── GET: Semua produk (beserta jumlah terjual & resep) ─────
 export async function GET(req: NextRequest) {
   const session = await getSession();
-  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  let tenantId: string;
-  try {
-    tenantId = requireTenantId(session.tenantId);
-  } catch {
-    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
-  }
   const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    // Fallback ke default tenant untuk akses baca publik (middleware sudah menandai route ini sebagai public)
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "legacy-kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    return NextResponse.json({ products: [], sold: [] });
+  }
+
   const categoryId = searchParams.get("categoryId");
   const onlyAvailable = searchParams.get("available") === "true";
 

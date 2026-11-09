@@ -26,18 +26,37 @@ function formatFriendlyDate(date: Date) {
 // ─── GET: Ambil Daftar Customer (Loyalty Hub) ─────────────────
 export async function GET(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "legacy-kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
   }
-  let tenantId: string;
-  try {
-    tenantId = requireTenantId(session.tenantId);
-  } catch {
-    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+
+  if (!tenantId) {
+    const id = searchParams.get("id");
+    if (id) {
+      return NextResponse.json({ message: "Customer tidak ditemukan" }, { status: 404 });
+    }
+    return NextResponse.json({ members: [], totalItems: 0, totalPages: 0 });
   }
 
   try {
-    const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
     // Jika dipanggil GET detail per ID
