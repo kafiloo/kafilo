@@ -8,6 +8,17 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  const legacyTenant = await prisma.tenant.upsert({
+    where: { slug: "kafiloo" },
+    update: {},
+    create: {
+      id: "legacy-kafiloo",
+      name: "Kafiloo",
+      slug: "kafiloo",
+      status: "ACTIVE",
+    },
+  });
+
   console.log("🌱 Cleaning database...");
   await prisma.recipeItem.deleteMany({});
   await prisma.inventoryItem.deleteMany({});
@@ -24,13 +35,13 @@ async function main() {
   const hashedPassword = await bcrypt.hash("admin123", 10);
 
   const superadmin = await prisma.user.create({
-    data: { name: "Owner", username: "superadmin", password: hashedPassword, role: Role.SUPER_ADMIN },
+    data: { name: "Owner", username: "superadmin", password: hashedPassword, role: Role.SUPER_ADMIN, tenantId: legacyTenant.id },
   });
   const cashierA = await prisma.user.create({
-    data: { name: "Budi Santoso", username: "budi", password: hashedPassword, role: Role.CASHIER },
+    data: { name: "Budi Santoso", username: "budi", password: hashedPassword, role: Role.CASHIER, tenantId: legacyTenant.id },
   });
   const cashierB = await prisma.user.create({
-    data: { name: "Siti Rahma", username: "siti", password: hashedPassword, role: Role.CASHIER },
+    data: { name: "Siti Rahma", username: "siti", password: hashedPassword, role: Role.CASHIER, tenantId: legacyTenant.id },
   });
 
   console.log("🌱 Seeding Store Setting...");
@@ -38,6 +49,7 @@ async function main() {
     data: {
       id: "kofilo-store-1",
       storeName: "Craft Coffee",
+      tenantId: legacyTenant.id,
       loyaltyEnabled: true,
       rewardPerAmount: 10000,
       pointsEarned: 1,
@@ -52,18 +64,18 @@ async function main() {
 
   console.log("🌱 Seeding Customers...");
   const cust1 = await prisma.customer.create({
-    data: { phone: "6281234567890", name: "Alex Morgan", points: 50 },
+    data: { phone: "6281234567890", name: "Alex Morgan", points: 50, tenantId: legacyTenant.id },
   });
   const cust2 = await prisma.customer.create({
-    data: { phone: "6289876543210", name: "Budi Santoso", points: 120 },
+    data: { phone: "6289876543210", name: "Budi Santoso", points: 120, tenantId: legacyTenant.id },
   });
 
   console.log("🌱 Seeding Categories...");
-  const catCoffee = await prisma.category.create({ data: { name: "Coffee" } });
-  const catNonCoffee = await prisma.category.create({ data: { name: "Non-Coffee" } });
-  const catPastry = await prisma.category.create({ data: { name: "Pastry" } });
-  const catDessert = await prisma.category.create({ data: { name: "Dessert" } });
-  const catAddon = await prisma.category.create({ data: { name: "Add-on" } });
+  const catCoffee = await prisma.category.create({ data: { name: "Coffee", tenantId: legacyTenant.id } });
+  const catNonCoffee = await prisma.category.create({ data: { name: "Non-Coffee", tenantId: legacyTenant.id } });
+  const catPastry = await prisma.category.create({ data: { name: "Pastry", tenantId: legacyTenant.id } });
+  const catDessert = await prisma.category.create({ data: { name: "Dessert", tenantId: legacyTenant.id } });
+  const catAddon = await prisma.category.create({ data: { name: "Add-on", tenantId: legacyTenant.id } });
 
   console.log("🌱 Seeding Products...");
   const productsData = [
@@ -83,7 +95,7 @@ async function main() {
 
   const products: any[] = [];
   for (const p of productsData) {
-    const created = await prisma.product.create({ data: p });
+    const created = await prisma.product.create({ data: { ...p, tenantId: legacyTenant.id } });
     products.push(created);
   }
 
@@ -116,6 +128,7 @@ async function main() {
         currentStock: inv.currentStock,
         minThreshold: inv.minThreshold,
         sku: `INV-${String(i + 1).padStart(4, "0")}`,
+        tenantId: legacyTenant.id,
       },
     });
   }
@@ -150,6 +163,7 @@ async function main() {
         paymentMethod: oData.paymentMethod,
         status: oData.status,
         cashierId: oData.cashierId,
+        tenantId: legacyTenant.id,
         createdAt: oData.createdAt,
         orderItems: {
           create: {
