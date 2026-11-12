@@ -39,8 +39,14 @@ const PUBLIC_ROUTES = [
 // --- JWT Verify Helper ---
 
 function getSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET || "kofilo-pwa-jwt-secret-2026-randomsalt-change-in-production";
-  return new TextEncoder().encode(secret);
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET is required in production.");
+  }
+
+  // Keep local development aligned with src/lib/auth.ts. Never use this key in production.
+  const sessionSecret = secret || "development-only-session-secret";
+  return new TextEncoder().encode(sessionSecret);
 }
 
 async function verifySessionCookie(cookieValue: string): Promise<{ role: string } | null> {
@@ -73,7 +79,9 @@ export async function middleware(request: NextRequest) {
 
   // Lewati route publik
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
-    pathname.startsWith(route)
+    route === "/"
+      ? pathname === "/"
+      : pathname === route || pathname.startsWith(`${route}/`)
   );
   if (isPublicRoute) return NextResponse.next();
 
