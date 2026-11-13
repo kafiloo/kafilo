@@ -4,7 +4,7 @@ import {
   enforceRateLimit,
   rateLimitResponse,
 } from "@/lib/rate-limit";
-import { TenantSlugError, validateTenantSlug } from "@/lib/tenant-slug";
+import { generateTenantSlug, TenantSlugError, validateTenantSlug } from "@/lib/tenant-slug";
 
 export async function GET(request: Request) {
   const rateLimit = await enforceRateLimit(
@@ -29,5 +29,8 @@ export async function GET(request: Request) {
   }
 
   const tenant = await prisma.tenant.findUnique({ where: { slug } });
-  return NextResponse.json({ available: !tenant });
+  const suggestion = tenant
+    ? await generateTenantSlug(slug, async (candidate) => Boolean(await prisma.tenant.findUnique({ where: { slug: candidate }, select: { id: true } })))
+    : undefined;
+  return NextResponse.json({ available: !tenant, ...(suggestion ? { suggestion } : {}) });
 }

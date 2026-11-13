@@ -12,13 +12,16 @@ export async function GET(req: NextRequest) {
   // (localhost, Vercel preview, production domain)
   const baseUrl = new URL(req.url).origin;
 
-  const response = NextResponse.redirect(new URL("/login", baseUrl));
+  const response = NextResponse.redirect(new URL("/masuk", baseUrl));
 
   // Hapus cookie session POS
   response.cookies.set("pos_session", "", {
     httpOnly: true,
     maxAge: 0,
     path: "/",
+    ...(process.env.AUTH_COOKIE_DOMAIN || process.env.NODE_ENV === "production"
+      ? { domain: process.env.AUTH_COOKIE_DOMAIN || ".kafiloo.com" }
+      : {}),
   });
 
   return response;

@@ -36,7 +36,7 @@ export function validateTenantSlug(value: string): string {
   return slug;
 }
 
-function normalizeBusinessName(name: string): string {
+export function normalizeBusinessName(name: string): string {
   return name
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")

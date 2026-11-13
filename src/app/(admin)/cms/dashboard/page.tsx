@@ -17,7 +17,7 @@ function getDateRange(dateStr?: string) {
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const session = await getSession();
   const role = session?.role as string | undefined;
-  if (!role || (role !== "SUPER_ADMIN" && role !== "MANAGER")) redirect("/login");
+  if (!role || (role !== "SUPER_ADMIN" && role !== "MANAGER")) redirect("/masuk");
 
   // TypeScript guard: after redirect, session is guaranteed non-null
   const safeSession = session!;

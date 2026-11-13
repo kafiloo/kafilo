@@ -86,7 +86,7 @@ export async function sendVerificationEmail(
   }
 
   const accessToken = await getAccessToken();
-  const verificationUrl = `${appUrl.replace(/\/$/, "")}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const verificationUrl = `${appUrl.replace(/\/$/, "")}/cek-email?token=${encodeURIComponent(rawToken)}`;
   const response = await fetch(
     `https://gmail.googleapis.com/gmail/v1/users/${encodeURIComponent(delegatedUser)}/messages/send`,
     {

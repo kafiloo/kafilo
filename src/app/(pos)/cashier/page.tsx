@@ -8,7 +8,7 @@ export default async function CashierPage() {
   const session = await getSession();
   
   if (!session) {
-    redirect("/login");
+    redirect("/masuk");
   }
 
   // Mengirim nama kasir ke komponen visual (CashierClient)

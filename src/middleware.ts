@@ -25,6 +25,10 @@ const PUBLIC_ROUTES = [
   "/",
   "/landingpage",
   "/login",
+  "/masuk",
+  "/daftar",
+  "/cek-email",
+  "/verify-email",
   "/api/auth",
   // API PWA publik
   "/api/v1/pwa/menus",
@@ -90,13 +94,13 @@ export async function middleware(request: NextRequest) {
 
   // Jika tidak ada session -- redirect ke login
   if (!sessionCookie) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/masuk", request.url));
   }
 
   // Verify JWT session — jika tamper/expired, redirect ke login
   const session = await verifySessionCookie(sessionCookie);
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/masuk", request.url));
   }
 
   const role = session.role;
@@ -120,7 +124,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
   if (isCashierRoute && role !== "CASHIER" && role !== "SUPER_ADMIN" && role !== "MANAGER") {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/masuk", request.url));
   }
 
   return NextResponse.next();

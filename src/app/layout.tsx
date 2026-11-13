@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -36,7 +37,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
-      <body className={geist.className}>{children}</body>
+      <body className={geist.className}><AuthProvider>{children}</AuthProvider></body>
     </html>
   );
 }
