@@ -17,7 +17,12 @@ export async function GET() {
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const tenantId = requireTenantId(session.tenantId);
+    let tenantId: string;
+    try {
+      tenantId = requireTenantId(session.tenantId);
+    } catch {
+      return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+    }
 
     // Ambil pesanan yang masih aktif (belum selesai / dibatalkan)
     const orders = await prisma.pwaOrder.findMany({
