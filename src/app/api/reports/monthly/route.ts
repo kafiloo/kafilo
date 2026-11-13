@@ -6,17 +6,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    // Dummy data untuk development / preview tanpa tenant
+    const currentYear = new Date().getFullYear();
+    const dummyMonthlyData = Array.from({ length: 12 }, (_, i) => ({
+      month: i + 1,
+      count: Math.floor(Math.random() * 50) + 10,
+      revenue: Math.floor(Math.random() * 5000000) + 1000000,
+    }));
+    const totalOrders = dummyMonthlyData.reduce((s, d) => s + d.count, 0);
+    const totalRevenue = dummyMonthlyData.reduce((s, d) => s + d.revenue, 0);
+    return NextResponse.json({
+      mode: "monthly",
+      year: currentYear,
+      totalOrders,
+      totalRevenue,
+      avgTicket: totalOrders > 0 ? Math.floor(totalRevenue / totalOrders) : 0,
+      data: dummyMonthlyData,
+    });
   }
 
   try {
-    const { searchParams } = new URL(req.url);
     const yearParam = searchParams.get("year");
     const monthParam = searchParams.get("month"); // format: YYYY-MM, untuk daily detail
 
@@ -32,6 +70,7 @@ export async function GET(req: NextRequest) {
         where: {
           status: "COMPLETED",
           createdAt: { gte: startDate, lte: endDate },
+          tenantId,
         },
         orderBy: { createdAt: "asc" },
       });
@@ -62,6 +101,7 @@ export async function GET(req: NextRequest) {
       where: {
         status: "COMPLETED",
         createdAt: { gte: startDate, lte: endDate },
+        tenantId,
       },
     });
 

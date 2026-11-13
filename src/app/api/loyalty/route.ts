@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 // Helper memformat tanggal ramah pengguna
 function formatFriendlyDate(date: Date) {
@@ -25,18 +26,53 @@ function formatFriendlyDate(date: Date) {
 // ─── GET: Ambil Daftar Customer (Loyalty Hub) ─────────────────
 export async function GET(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    const id = searchParams.get("id");
+    if (id) {
+      return NextResponse.json({ message: "Customer tidak ditemukan" }, { status: 404 });
+    }
+    const page = Number(searchParams.get("page") ?? 1);
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyMembers = [
+      { id: "cust-dummy-1", memberId: "LOY-0001", name: "Alex Morgan", phone: "6281234567890", points: 50, lastTransaction: "Today, 10:30" },
+      { id: "cust-dummy-2", memberId: "LOY-0002", name: "Sarah Johnson", phone: "6281234567891", points: 120, lastTransaction: "Yesterday, 15:45" },
+      { id: "cust-dummy-3", memberId: "LOY-0003", name: "Budi Santoso", phone: "6281234567892", points: 0, lastTransaction: "2 days ago, 09:15" },
+    ];
+    return NextResponse.json({
+      members: dummyMembers,
+      pagination: { currentPage: page, totalPages: 1, totalItems: dummyMembers.length, itemsPerPage: 10 },
+    });
   }
 
   try {
-    const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
     // Jika dipanggil GET detail per ID
     if (id) {
-      const customer = await prisma.customer.findUnique({
-        where: { id },
+      const customer = await prisma.customer.findFirst({
+        where: { id, tenantId },
       });
       if (!customer) {
         return NextResponse.json({ message: "Customer tidak ditemukan" }, { status: 404 });
@@ -60,7 +96,7 @@ export async function GET(req: NextRequest) {
     const filter = searchParams.get("filter") ?? "All Members";
 
     // Build query where clause
-    const where: any = {};
+    const where: any = { tenantId };
     
     if (search) {
       where.OR = [
@@ -119,6 +155,12 @@ export async function POST(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const body = await req.json();
@@ -134,8 +176,8 @@ export async function POST(req: NextRequest) {
     if (!cleanPhone.startsWith("62")) cleanPhone = "62" + cleanPhone;
 
     // Cek duplikasi
-    const existing = await prisma.customer.findUnique({
-      where: { phone: cleanPhone },
+    const existing = await prisma.customer.findFirst({
+      where: { phone: cleanPhone, tenantId },
     });
     if (existing) {
       return NextResponse.json({ message: "Nomor handphone sudah terdaftar" }, { status: 400 });
@@ -146,6 +188,7 @@ export async function POST(req: NextRequest) {
         name: name || `Guest ${cleanPhone}`,
         phone: cleanPhone,
         points: Number(points ?? 0),
+        tenantId,
       },
     });
 
@@ -172,6 +215,12 @@ export async function PUT(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
@@ -184,8 +233,8 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { name, phone, points } = body;
 
-    const existing = await prisma.customer.findUnique({
-      where: { id },
+    const existing = await prisma.customer.findFirst({
+      where: { id, tenantId },
     });
 
     if (!existing) {
@@ -199,8 +248,8 @@ export async function PUT(req: NextRequest) {
 
     // Cek duplikasi jika no HP berubah
     if (cleanPhone !== existing.phone) {
-      const duplicate = await prisma.customer.findUnique({
-        where: { phone: cleanPhone },
+      const duplicate = await prisma.customer.findFirst({
+        where: { phone: cleanPhone, tenantId },
       });
       if (duplicate) {
         return NextResponse.json({ message: "Nomor handphone baru sudah digunakan member lain" }, { status: 400 });
@@ -239,6 +288,12 @@ export async function DELETE(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
@@ -249,8 +304,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Pastikan customer ada
-    const customer = await prisma.customer.findUnique({
-      where: { id },
+    const customer = await prisma.customer.findFirst({
+      where: { id, tenantId },
     });
 
     if (!customer) {
@@ -258,9 +313,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Hapus customer (tabel relasi order akan mem-null-kan customerId secara otomatis karena setup schema relasi default set null / cascade)
-    await prisma.customer.delete({
-      where: { id },
-    });
+    await prisma.customer.delete({ where: { id } });
 
     return NextResponse.json({ message: "Member berhasil dihapus dari database" });
   } catch (error) {

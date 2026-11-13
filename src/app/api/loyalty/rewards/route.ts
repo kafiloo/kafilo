@@ -7,15 +7,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
 // ─── Helper: Generate Code Reward ──────────────────────────
 const REWARD_PREFIX = "RWD";
 
-async function generateCode(): Promise<string> {
+async function generateCode(tenantId: string): Promise<string> {
   const lastReward = await prisma.rewardProduct.findFirst({
-    where: { code: { startsWith: REWARD_PREFIX } },
+    where: { code: { startsWith: REWARD_PREFIX }, tenantId },
     orderBy: { code: "desc" },
     select: { code: true },
   });
@@ -35,11 +36,39 @@ async function generateCode(): Promise<string> {
 // ─── GET: Ambil semua reward products ────────────────────────
 export async function GET(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
   }
+
+  if (!tenantId) {
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyRewards = [
+      { id: "rew-dummy-1", name: "Voucher Diskon 10%", code: "RWD-001", pointCost: 100, qtyExchange: 5 },
+      { id: "rew-dummy-2", name: "Kopi Gratis", code: "RWD-002", pointCost: 50, qtyExchange: 10 },
+      { id: "rew-dummy-3", name: "Voucher Makan Gratis", code: "RWD-003", pointCost: 200, qtyExchange: 2 },
+    ];
+    return NextResponse.json({ rewards: dummyRewards });
+  }
+
   try {
-    const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") ?? "";
     const where = search
       ? {
@@ -50,7 +79,7 @@ export async function GET(req: NextRequest) {
         }
       : {};
     const rewards = await prisma.rewardProduct.findMany({
-      where,
+      where: { ...where, tenantId },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ rewards });
@@ -66,6 +95,12 @@ export async function POST(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
   try {
     const body = await req.json();
     const { name, pointCost, qtyExchange } = body;
@@ -75,14 +110,15 @@ export async function POST(req: NextRequest) {
     }
     
     // 🔥 Auto-generate code RWD-001 format
-    const code = await generateCode();
+    const code = await generateCode(tenantId);
     
     const reward = await prisma.rewardProduct.create({
       data: { 
         name, 
         code,
         pointCost: Number(pointCost), 
-        qtyExchange: qtyExchange ? Number(qtyExchange) : 1 
+        qtyExchange: qtyExchange ? Number(qtyExchange) : 1,
+        tenantId,
       },
     });
     
@@ -99,12 +135,18 @@ export async function PUT(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ message: "ID wajib diisi" }, { status: 400 });
     const body = await req.json();
-    const existing = await prisma.rewardProduct.findUnique({ where: { id } });
+    const existing = await prisma.rewardProduct.findFirst({ where: { id, tenantId } });
     if (!existing) return NextResponse.json({ message: "Reward tidak ditemukan" }, { status: 404 });
     
     const reward = await prisma.rewardProduct.update({
@@ -129,11 +171,17 @@ export async function DELETE(req: NextRequest) {
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ message: "ID wajib diisi" }, { status: 400 });
-    const existing = await prisma.rewardProduct.findUnique({ where: { id } });
+    const existing = await prisma.rewardProduct.findFirst({ where: { id, tenantId } });
     if (!existing) return NextResponse.json({ message: "Reward tidak ditemukan" }, { status: 404 });
     await prisma.rewardProduct.delete({ where: { id } });
     return NextResponse.json({ message: "Reward berhasil dihapus" });

@@ -7,11 +7,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
 // ─── Helper: Generate SKU dari Kategori ─────────────────────
-async function generateSku(categoryId: string): Promise<string> {
+async function generateSku(categoryId: string, tenantId: string): Promise<string> {
   const category = await prisma.category.findUnique({
     where: { id: categoryId },
     select: { name: true },
@@ -27,7 +28,7 @@ async function generateSku(categoryId: string): Promise<string> {
   if (!prefix) throw new Error("Nama kategori tidak valid untuk generate SKU");
 
   const lastProduct = await prisma.product.findFirst({
-    where: { sku: { startsWith: prefix } },
+    where: { sku: { startsWith: prefix }, tenantId },
     orderBy: { sku: "desc" },
     select: { sku: true },
   });
@@ -46,13 +47,83 @@ async function generateSku(categoryId: string): Promise<string> {
 
 // ─── GET: Semua produk (beserta jumlah terjual & resep) ─────
 export async function GET(req: NextRequest) {
+  const session = await getSession();
   const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    // Fallback ke default tenant untuk akses baca publik (middleware sudah menandai route ini sebagai public)
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyProducts = [
+      {
+        id: "prod-dummy-1",
+        name: "Espresso",
+        description: "Kopi hitam pekat",
+        price: 22000,
+        sku: "COF-001",
+        image: null,
+        isAvailable: true,
+        categoryId: "cat-dummy-1",
+        category: { id: "cat-dummy-1", name: "Coffee", isDrink: false },
+        sold: 45,
+        recipeItems: [],
+      },
+      {
+        id: "prod-dummy-2",
+        name: "Latte",
+        description: "Kopi dengan susu steamed",
+        price: 28000,
+        sku: "COF-002",
+        image: null,
+        isAvailable: true,
+        categoryId: "cat-dummy-1",
+        category: { id: "cat-dummy-1", name: "Coffee", isDrink: true },
+        sold: 62,
+        recipeItems: [],
+      },
+      {
+        id: "prod-dummy-3",
+        name: "Cappuccino",
+        description: "Kopi dengan foam susu",
+        price: 30000,
+        sku: "COF-003",
+        image: null,
+        isAvailable: true,
+        categoryId: "cat-dummy-1",
+        category: { id: "cat-dummy-1", name: "Coffee", isDrink: true },
+        sold: 38,
+        recipeItems: [],
+      },
+    ];
+    return NextResponse.json({ products: dummyProducts, sold: [] });
+  }
+
   const categoryId = searchParams.get("categoryId");
   const onlyAvailable = searchParams.get("available") === "true";
 
   try {
     const products = await prisma.product.findMany({
       where: {
+        tenantId,
         ...(categoryId ? { categoryId } : {}),
         ...(onlyAvailable ? { isAvailable: true } : {}),
       },
@@ -85,11 +156,12 @@ export async function GET(req: NextRequest) {
     try {
       const cashierSoldData = await prisma.orderItem.groupBy({
         by: ['productId'],
+        where: { product: { tenantId } },
         _sum: { quantity: true },
       }).catch(() => []);
 
       const pwaOrders = await prisma.pwaOrder.findMany({
-        where: { status: { not: 'CANCELLED' } },
+        where: { status: { not: 'CANCELLED' }, tenantId },
         select: { items: true }
       }).catch(() => []);
 
@@ -126,7 +198,7 @@ export async function GET(req: NextRequest) {
 }
 
 // ─── Validasi ingredients (cek keberadaan stock_id) ──────────
-async function validateIngredients(ingredients: any[]): Promise<string | null> {
+async function validateIngredients(ingredients: any[], tenantId: string): Promise<string | null> {
   if (!ingredients || !Array.isArray(ingredients)) return null;
 
   for (const ing of ingredients) {
@@ -137,8 +209,8 @@ async function validateIngredients(ingredients: any[]): Promise<string | null> {
       return `Takaran untuk bahan ID ${ing.inventoryId} harus lebih dari 0`;
     }
 
-    const exists = await prisma.inventoryItem.findUnique({
-      where: { id: ing.inventoryId },
+    const exists = await prisma.inventoryItem.findFirst({
+      where: { id: ing.inventoryId, tenantId },
       select: { id: true },
     });
 
@@ -151,12 +223,12 @@ async function validateIngredients(ingredients: any[]): Promise<string | null> {
 }
 
 // ─── Helper: Simpan resep (hapus lama + buat baru) ──────────
-async function saveRecipe(productId: string, ingredients: any[]) {
+async function saveRecipe(productId: string, ingredients: any[], tenantId: string) {
   if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) return;
 
   // Hapus semua resep lama untuk produk ini
   await prisma.recipeItem.deleteMany({
-    where: { productId },
+    where: { productId, tenantId },
   });
 
   // Buat resep baru
@@ -164,6 +236,7 @@ async function saveRecipe(productId: string, ingredients: any[]) {
     data: ingredients.map((ing: any) => ({
       inventoryId: ing.inventoryId,
       productId,
+      tenantId,
       quantityNeeded: Number(ing.quantityNeeded),
     })),
   });
@@ -172,8 +245,14 @@ async function saveRecipe(productId: string, ingredients: any[]) {
 // ─── POST: Tambah produk baru ────────────────────────────────
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
+  if (!session || !["SUPER_ADMIN", "OWNER", "MANAGER"].includes(session.role)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -187,13 +266,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const category = await prisma.category.findFirst({
+      where: { id: categoryId, tenantId },
+      select: { id: true },
+    });
+    if (!category) {
+      return NextResponse.json({ message: "Kategori tidak ditemukan" }, { status: 404 });
+    }
+
     // Validasi ingredients jika ada
-    const validationError = await validateIngredients(ingredients);
+    const validationError = await validateIngredients(ingredients, tenantId);
     if (validationError) {
       return NextResponse.json({ message: validationError }, { status: 400 });
     }
 
-    const sku = await generateSku(categoryId);
+    const sku = await generateSku(categoryId, tenantId);
 
     const product = await prisma.product.create({
       data: {
@@ -204,13 +291,14 @@ export async function POST(req: NextRequest) {
         image: image || null,
         isAvailable: isAvailable ?? true,
         categoryId,
+        tenantId,
       },
       include: { category: true },
     });
 
     // Simpan resep jika ada ingredients
     if (ingredients && ingredients.length > 0) {
-      await saveRecipe(product.id, ingredients);
+      await saveRecipe(product.id, ingredients, tenantId);
     }
 
     // Ambil data lengkap dengan resep
@@ -238,8 +326,14 @@ export async function POST(req: NextRequest) {
 // ─── PUT: Edit produk ────────────────────────────────────────
 export async function PUT(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
+  if (!session || !["SUPER_ADMIN", "OWNER", "MANAGER"].includes(session.role)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -249,7 +343,7 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
     
-    let updateData: any = {
+    const updateData: any = {
       ...(body.name !== undefined && { name: body.name }),
       ...(body.description !== undefined && { description: body.description || null }),
       ...(body.price !== undefined && { price: Number(body.price) }),
@@ -258,14 +352,24 @@ export async function PUT(req: NextRequest) {
     };
 
     if (body.categoryId !== undefined) {
-      const existingProduct = await prisma.product.findUnique({
-        where: { id },
+      const existingProduct = await prisma.product.findFirst({
+        where: { id, tenantId },
         select: { categoryId: true, sku: true },
       });
+      if (!existingProduct) {
+        return NextResponse.json({ message: "Produk tidak ditemukan" }, { status: 404 });
+      }
 
-      if (existingProduct && existingProduct.categoryId !== body.categoryId) {
+      if (existingProduct.categoryId !== body.categoryId) {
+        const category = await prisma.category.findFirst({
+          where: { id: body.categoryId, tenantId },
+          select: { id: true },
+        });
+        if (!category) {
+          return NextResponse.json({ message: "Kategori tidak ditemukan" }, { status: 404 });
+        }
         updateData.categoryId = body.categoryId;
-        updateData.sku = await generateSku(body.categoryId);
+        updateData.sku = await generateSku(body.categoryId, tenantId);
       } else {
         updateData.categoryId = body.categoryId;
       }
@@ -273,26 +377,27 @@ export async function PUT(req: NextRequest) {
 
     // Validasi ingredients jika ada
     if (body.ingredients !== undefined) {
-      const validationError = await validateIngredients(body.ingredients);
+      const validationError = await validateIngredients(body.ingredients, tenantId);
       if (validationError) {
         return NextResponse.json({ message: validationError }, { status: 400 });
       }
     }
 
-    const product = await prisma.product.update({
-      where: { id },
+    const updated = await prisma.product.updateMany({
+      where: { id, tenantId },
       data: updateData,
-      include: { category: true },
     });
-
+    if (updated.count !== 1) {
+      return NextResponse.json({ message: "Produk tidak ditemukan" }, { status: 404 });
+    }
     // Update resep jika ingredients disertakan
     if (body.ingredients !== undefined) {
-      await saveRecipe(id, body.ingredients);
+      await saveRecipe(id, body.ingredients, tenantId);
     }
 
     // Ambil data lengkap dengan resep
-    const fullProduct = await prisma.product.findUnique({
-      where: { id },
+    const fullProduct = await prisma.product.findFirst({
+      where: { id, tenantId },
       include: {
         category: true,
         recipeItems: {
@@ -315,8 +420,14 @@ export async function PUT(req: NextRequest) {
 // ─── DELETE: Hapus produk ────────────────────────────────────
 export async function DELETE(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
+  if (!session || !["SUPER_ADMIN", "OWNER", "MANAGER"].includes(session.role)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -324,7 +435,10 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ message: "ID wajib diisi" }, { status: 400 });
 
-    await prisma.product.delete({ where: { id } });
+    const deleted = await prisma.product.deleteMany({ where: { id, tenantId } });
+    if (deleted.count !== 1) {
+      return NextResponse.json({ message: "Produk tidak ditemukan" }, { status: 404 });
+    }
     return NextResponse.json({ message: "Produk berhasil dihapus" });
   } catch (error) {
     console.error("[DELETE /api/products]", error);

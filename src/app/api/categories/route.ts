@@ -6,13 +6,49 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic'; // Hindari cache ganas Next.js
 
 // ─── GET: Ambil semua kategori (Public) ──────────────────────
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = await getSession();
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    // Fallback ke default tenant untuk akses baca publik (middleware sudah menandai route ini sebagai public)
+    const { searchParams } = new URL(req.url);
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyCategories = [
+      { id: "cat-dummy-1", name: "Coffee", isDrink: true, sortOrder: 0 },
+      { id: "cat-dummy-2", name: "Non-Coffee", isDrink: false, sortOrder: 1 },
+      { id: "cat-dummy-3", name: "Add-on", isDrink: false, sortOrder: 2 },
+    ];
+    return NextResponse.json({ categories: dummyCategories });
+  }
+
   try {
     const categories = await prisma.category.findMany({
+      where: { tenantId },
       orderBy: { sortOrder: "asc" }, // 🔥 UBAHAN: Sekarang diurutkan berdasarkan drag-and-drop
     });
     return NextResponse.json({ categories });
@@ -25,8 +61,14 @@ export async function GET() {
 // ─── POST: Tambah kategori baru (SUPER_ADMIN only) ───────────
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
+  if (!session || !["SUPER_ADMIN", "OWNER", "MANAGER"].includes(session.role)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -39,6 +81,7 @@ export async function POST(req: NextRequest) {
 
     // 🔥 UBAHAN: Cari urutan terakhir, lalu tambahkan di posisi paling bawah
     const lastCategory = await prisma.category.findFirst({
+      where: { tenantId },
       orderBy: { sortOrder: 'desc' },
     });
     const nextOrder = lastCategory ? lastCategory.sortOrder + 1 : 0;
@@ -47,7 +90,8 @@ export async function POST(req: NextRequest) {
       data: { 
         name, 
         isDrink: isDrink ?? false,
-        sortOrder: nextOrder // 🔥 UBAHAN: Simpan urutannya
+        sortOrder: nextOrder,
+        tenantId,
       },
     });
 
@@ -61,8 +105,14 @@ export async function POST(req: NextRequest) {
 // ─── PUT: Edit kategori (SUPER_ADMIN only) ───────────────────
 export async function PUT(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
+  if (!session || !["SUPER_ADMIN", "OWNER", "MANAGER"].includes(session.role)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -71,8 +121,8 @@ export async function PUT(req: NextRequest) {
     // 🔥 UBAHAN: Tangkap sinyal Reorder massal dari Drag-and-Drop
     if (body.reorder && Array.isArray(body.categories)) {
       const transactions = body.categories.map((cat: any) => 
-        prisma.category.update({
-          where: { id: cat.id },
+        prisma.category.updateMany({
+          where: { id: cat.id, tenantId },
           data: { sortOrder: cat.sortOrder }
         })
       );
@@ -85,13 +135,17 @@ export async function PUT(req: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ message: "ID wajib diisi" }, { status: 400 });
     
-    const category = await prisma.category.update({
-      where: { id },
+    const updated = await prisma.category.updateMany({
+      where: { id, tenantId },
       data: {
         ...(body.name !== undefined && { name: body.name }),
         ...(body.isDrink !== undefined && { isDrink: body.isDrink }),
       },
     });
+    if (updated.count !== 1) {
+      return NextResponse.json({ message: "Kategori tidak ditemukan" }, { status: 404 });
+    }
+    const category = await prisma.category.findFirst({ where: { id, tenantId } });
 
     return NextResponse.json({ category });
   } catch (error) {
@@ -103,8 +157,14 @@ export async function PUT(req: NextRequest) {
 // ─── DELETE: Hapus kategori (SUPER_ADMIN only) ───────────────
 export async function DELETE(req: NextRequest) {
   const session = await getSession();
-  if (!session || session.role !== "SUPER_ADMIN") {
+  if (!session || !["SUPER_ADMIN", "OWNER", "MANAGER"].includes(session.role)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -115,7 +175,10 @@ export async function DELETE(req: NextRequest) {
     // 🔥 UBAHAN: Hapus blokade/validasi error manual di sini.
     // Biarkan Prisma yang bekerja merobohkan "rak" dan "buku"-nya via Cascade.
 
-    await prisma.category.delete({ where: { id } });
+    const deleted = await prisma.category.deleteMany({ where: { id, tenantId } });
+    if (deleted.count !== 1) {
+      return NextResponse.json({ message: "Kategori tidak ditemukan" }, { status: 404 });
+    }
     return NextResponse.json({ message: "Kategori berhasil dihapus" });
   } catch (error: any) {
     console.error("[DELETE /api/categories]", error);

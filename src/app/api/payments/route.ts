@@ -18,6 +18,8 @@ import {
 import { generatePakasirOrderId } from "@/lib/pakasir-order";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { classifyPaymentError, logPaymentError } from "@/lib/payment-api-error";
+import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +68,7 @@ function toSafe(row: {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession();
     const json = await req.json().catch(() => null);
     const parsed = BodySchema.safeParse(json);
     if (!parsed.success) {
@@ -85,10 +88,11 @@ export async function POST(req: NextRequest) {
     // Ambil nominal dari server — jangan percaya amount dari client.
     let amount: number;
     let linkPwaOrderId: string | null = null;
+    let tenantId: string;
     if (pwaOrderId) {
       const order = await prisma.pwaOrder.findUnique({
         where: { id: pwaOrderId },
-        select: { id: true, totalAmount: true, status: true },
+        select: { id: true, totalAmount: true, status: true, tenantId: true },
       });
       if (!order)
         return NextResponse.json({ message: "PwaOrder tidak ditemukan." }, { status: 404 });
@@ -99,18 +103,19 @@ export async function POST(req: NextRequest) {
         );
       amount = order.totalAmount;
       linkPwaOrderId = order.id;
+      tenantId = requireTenantId(order.tenantId);
     } else if (planId) {
       const plan = PLANS.find((p) => p.id === (planId as PlanId));
       if (!plan)
         return NextResponse.json({ message: "planId tidak dikenal." }, { status: 400 });
       amount = plan.price;
+      tenantId = requireTenantId(session?.tenantId);
     } else {
       return NextResponse.json(
         { message: "pwaOrderId atau planId wajib diisi (nominal diambil dari server)." },
         { status: 400 }
       );
     }
-
     try {
       assertPakasirAmount(method as (typeof PAKASIR_METHODS)[number], amount);
     } catch (e) {
@@ -127,7 +132,7 @@ export async function POST(req: NextRequest) {
     // (Hanya untuk pwaOrderId; pembayaran planId selalu buat transaksi baru.)
     if (linkPwaOrderId) {
       const existing = await prisma.pakasirPayment.findFirst({
-        where: { pwaOrderId: linkPwaOrderId, status: "PENDING" },
+        where: { pwaOrderId: linkPwaOrderId, status: "PENDING", tenantId },
         orderBy: { createdAt: "desc" },
       });
       if (existing && existing.method === method) {
@@ -145,6 +150,7 @@ export async function POST(req: NextRequest) {
       data: {
         orderId,
         pwaOrderId: linkPwaOrderId,
+        tenantId,
         txnId: result.txn_id,
         method,
         amount,

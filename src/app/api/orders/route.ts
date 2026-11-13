@@ -6,11 +6,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
   }
 
   try {
@@ -19,7 +26,9 @@ export async function GET(req: NextRequest) {
     const limit = Number(searchParams.get("limit") ?? 20);
     const skip = (page - 1) * limit;
 
-    const where = session.role === "CASHIER" ? { cashierId: session.id } : {};
+    const where = session.role === "CASHIER"
+      ? { cashierId: session.id, tenantId }
+      : { tenantId };
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -49,6 +58,12 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const body = await req.json();
@@ -60,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const productIds = items.map((i: any) => (i.productId || "").replace('-reward', ''));
     const products = await prisma.product.findMany({
-      where: { id: { in: productIds }, isAvailable: true },
+      where: { id: { in: productIds }, isAvailable: true, tenantId },
     });
 
     if (products.length !== productIds.length) {
@@ -85,8 +100,8 @@ export async function POST(req: NextRequest) {
 
     const order = await prisma.$transaction(async (tx) => {
       // Ambil konfigurasi toko (Tax & Service)
-      const storeSetting = await tx.storeSetting.findUnique({
-        where: { id: "kofilo-store-1" },
+      const storeSetting = await tx.storeSetting.findFirst({
+        where: { id: "kofilo-store-1", tenantId },
       });
 
       // 🔥 HITUNG TAX & SERVICE DINAMIS 🔥
@@ -111,8 +126,8 @@ export async function POST(req: NextRequest) {
              earnedPoints = Math.floor(calculatedTotal / rewardPerAmount) * pointsEarnedSetting;
           }
 
-          const existingCustomer = await tx.customer.findUnique({
-            where: { phone: cleanPhone },
+          const existingCustomer = await tx.customer.findFirst({
+            where: { phone: cleanPhone, tenantId },
           });
 
           if (existingCustomer) {
@@ -129,6 +144,7 @@ export async function POST(req: NextRequest) {
                 points: earnedPoints + registrationBonus,
                 createdAt: now,
                 updatedAt: now,
+                tenantId,
               },
             });
           }
@@ -143,7 +159,7 @@ export async function POST(req: NextRequest) {
 
       if (paidProductIds.length > 0) {
         const recipeItems = await tx.recipeItem.findMany({
-          where: { productId: { in: [...new Set(paidProductIds)] } },
+          where: { productId: { in: [...new Set(paidProductIds)] }, tenantId },
           include: { inventory: { select: { id: true, currentStock: true } } },
         });
 
@@ -172,8 +188,8 @@ export async function POST(req: NextRequest) {
 
         // Eksekusi pengurangan stock
         for (const [inventoryId, deductQty] of stockDeduction) {
-          await tx.inventoryItem.update({
-            where: { id: inventoryId },
+          await tx.inventoryItem.updateMany({
+            where: { id: inventoryId, tenantId },
             data: { currentStock: { decrement: deductQty } },
           });
         }
@@ -185,6 +201,7 @@ export async function POST(req: NextRequest) {
           paymentMethod: paymentMethod ?? "CASH",
           status: "COMPLETED",
           cashierId: session.id,
+          tenantId,
           createdAt: now,
           orderItems: {
             create: items.map((item: any) => {

@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export async function GET() {
   try {
@@ -16,6 +17,7 @@ export async function GET() {
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+    const tenantId = requireTenantId(session.tenantId);
 
     // Ambil pesanan yang masih aktif (belum selesai / dibatalkan)
     const orders = await prisma.pwaOrder.findMany({
@@ -23,6 +25,7 @@ export async function GET() {
         status: {
           in: ["BEING_PREPARED"],
         },
+        tenantId,
       },
       include: {
         customer: {

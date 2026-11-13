@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { extractTenantSlug } from "@/lib/tenant-context";
 
 // --- Route Configuration ---
 
@@ -65,9 +66,8 @@ export async function middleware(request: NextRequest) {
 
   // Lewati halaman customer (dinamis /{tableId}/menu, /{tableId}/cart, dll)
   // Pola: segment pertama bukan keyword admin/cashier/cms/login/api
-  const firstSegment = pathname.split("/")[1];
-  const SYSTEM_SEGMENTS = ["cms", "cashier", "api", "login", "_next", "favicon.ico", "icons", "public"];
-  if (firstSegment && !SYSTEM_SEGMENTS.includes(firstSegment)) {
+  const tenantSlug = extractTenantSlug(pathname);
+  if (tenantSlug) {
     return NextResponse.next();
   }
 

@@ -12,7 +12,9 @@ import { SignJWT, jwtVerify } from "jose";
 export interface SessionUser {
   id: string;
   name: string;
-  username: string;
+  username?: string;
+  email?: string;
+  tenantId?: string;
   role: Role;
 }
 
@@ -23,8 +25,11 @@ const SESSION_COOKIE = "pos_session";
 // ─── JWT Secret ──────────────────────────────────────────────
 
 function getSessionSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET || "kofilo-pwa-jwt-secret-2026-randomsalt-change-in-production";
-  return new TextEncoder().encode(secret);
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET is required in production.");
+  }
+  return new TextEncoder().encode(secret || "development-only-session-secret");
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -47,7 +52,9 @@ export async function getSession(): Promise<SessionUser | null> {
     return {
       id: payload.sub as string,
       name: payload.name as string,
-      username: payload.username as string,
+      username: payload.username as string | undefined,
+      email: payload.email as string | undefined,
+      tenantId: payload.tenantId as string | undefined,
       role: payload.role as Role,
     };
   } catch (e) {
@@ -65,6 +72,8 @@ export async function serializeSession(user: SessionUser): Promise<string> {
   return await new SignJWT({
     name: user.name,
     username: user.username,
+    email: user.email,
+    tenantId: user.tenantId,
     role: user.role,
   })
     .setProtectedHeader({ alg: "HS256" })

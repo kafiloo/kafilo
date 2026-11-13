@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { PwaOrderStatus } from "@prisma/client";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 // Status yang boleh dipilih oleh kasir (PENDING_CONFIRMATION tidak bisa di-set manual)
 const ALLOWED_STATUSES: PwaOrderStatus[] = [
@@ -27,6 +28,7 @@ export async function PATCH(
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+    const tenantId = requireTenantId(session.tenantId);
 
     const { orderId } = await params;
     const body = await req.json();
@@ -45,8 +47,8 @@ export async function PATCH(
     // --- Update status + kurangi stock dalam transaction ---
     const updated = await prisma.$transaction(async (tx) => {
       // --- Cek pesanan ada ---
-      const order = await tx.pwaOrder.findUnique({
-        where: { id: orderId },
+      const order = await tx.pwaOrder.findFirst({
+        where: { id: orderId, tenantId },
       });
 
       if (!order) {
@@ -83,7 +85,7 @@ export async function PATCH(
         if (paidItems.length > 0) {
           const productIds = paidItems.map((item) => item.productId);
           const recipeItems = await tx.recipeItem.findMany({
-            where: { productId: { in: [...new Set(productIds)] } },
+            where: { productId: { in: [...new Set(productIds)] }, tenantId },
             include: { inventory: { select: { id: true, currentStock: true } } },
           });
 
@@ -111,8 +113,8 @@ export async function PATCH(
 
           // Eksekusi pengurangan stock
           for (const [inventoryId, deductQty] of stockDeduction) {
-            await tx.inventoryItem.update({
-              where: { id: inventoryId },
+            await tx.inventoryItem.updateMany({
+              where: { id: inventoryId, tenantId },
               data: { currentStock: { decrement: deductQty } },
             });
           }

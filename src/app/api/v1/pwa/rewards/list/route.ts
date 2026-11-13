@@ -5,12 +5,18 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolvePublicTenant } from "@/lib/public-tenant";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tenant = await resolvePublicTenant(request);
+    if (!tenant || tenant.status !== "ACTIVE") {
+      return NextResponse.json({ message: "Tenant tidak ditemukan" }, { status: 404 });
+    }
     const rewards = await prisma.rewardProduct.findMany({
+      where: { tenantId: tenant.id },
       orderBy: { createdAt: "desc" },
       // Tarik semua data yang disetting superadmin
       select: {

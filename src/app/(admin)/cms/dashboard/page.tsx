@@ -24,22 +24,67 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   const resolvedParams = await searchParams;
   const { startDate, endDate, targetDate } = getDateRange(resolvedParams.date);
+  const tenantScope = safeSession.tenantId ? { tenantId: safeSession.tenantId } : {};
 
   const [completedOrders, completedPwaOrders, allCompletedOrders, allCompletedPwaOrders, allProducts, totalCustomers, customerPointsAgg] = await Promise.all([
-    prisma.order.findMany({ where: { status: "COMPLETED", createdAt: { gte: startDate, lte: endDate } }, include: { orderItems: { include: { product: { include: { category: true } } } } } }),
-    prisma.pwaOrder.findMany({ where: { status: "READY_FOR_PICKUP", createdAt: { gte: startDate, lte: endDate } } }),
-    prisma.order.findMany({ where: { status: "COMPLETED" }, include: { orderItems: { include: { product: { include: { category: true } } } } } }),
-    prisma.pwaOrder.findMany({ where: { status: "READY_FOR_PICKUP" } }),
-    prisma.product.findMany({ include: { category: true } }),
-    prisma.customer.count(),
-    prisma.customer.aggregate({ _sum: { points: true } }),
+    prisma.order.findMany({
+      where: { ...tenantScope, status: "COMPLETED", createdAt: { gte: startDate, lte: endDate } },
+      select: {
+        totalAmount: true,
+        orderItems: {
+          select: {
+            quantity: true,
+            subTotal: true,
+            productId: true,
+          },
+        },
+      },
+    }),
+    prisma.pwaOrder.findMany({
+      where: { ...tenantScope, status: "READY_FOR_PICKUP", createdAt: { gte: startDate, lte: endDate } },
+      select: { totalAmount: true, items: true },
+    }),
+    prisma.order.findMany({
+      where: { ...tenantScope, status: "COMPLETED" },
+      select: {
+        orderItems: {
+          select: {
+            quantity: true,
+            subTotal: true,
+            productId: true,
+          },
+        },
+      },
+    }),
+    prisma.pwaOrder.findMany({
+      where: { ...tenantScope, status: "READY_FOR_PICKUP" },
+      select: { items: true },
+    }),
+    prisma.product.findMany({
+      where: tenantScope,
+      select: {
+        id: true,
+        name: true,
+        category: { select: { name: true } },
+      },
+    }),
+    prisma.customer.count({ where: tenantScope }),
+    prisma.customer.aggregate({ where: tenantScope, _sum: { points: true } }),
   ]);
 
   const totalSales = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0) + completedPwaOrders.reduce((sum, o) => sum + o.totalAmount, 0);
   const totalCompletedOrders = completedOrders.length + completedPwaOrders.length;
   let totalItemsSold = 0;
   completedOrders.forEach(o => o.orderItems.forEach(i => totalItemsSold += i.quantity));
-  completedPwaOrders.forEach(o => (o.items as any[]).forEach(i => totalItemsSold += i.quantity));
+  completedPwaOrders.forEach(o => {
+    if (Array.isArray(o.items)) {
+      o.items.forEach((item) => {
+        if (typeof item === "object" && item !== null && "quantity" in item) {
+          totalItemsSold += Number(item.quantity) || 0;
+        }
+      });
+    }
+  });
 
   const itemSalesMap: Record<string, { name: string; category: string; qty: number; revenue: number }> = {};
   allProducts.forEach(p => {
@@ -53,12 +98,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     }
   }));
 
-  allCompletedPwaOrders.forEach(o => (o.items as any[]).forEach(i => {
-    if (itemSalesMap[i.productId]) {
-      itemSalesMap[i.productId].qty += i.quantity;
-      itemSalesMap[i.productId].revenue += (i.price * i.quantity);
-    }
-  }));
+  allCompletedPwaOrders.forEach(o => {
+    if (!Array.isArray(o.items)) return;
+    o.items.forEach((item) => {
+      if (typeof item !== "object" || item === null) return;
+      const productId = "productId" in item && typeof item.productId === "string" ? item.productId : "";
+      const quantity = "quantity" in item ? Number(item.quantity) || 0 : 0;
+      const price = "price" in item ? Number(item.price) || 0 : 0;
+      if (itemSalesMap[productId]) {
+        itemSalesMap[productId].qty += quantity;
+        itemSalesMap[productId].revenue += price * quantity;
+      }
+    });
+  });
 
   const allSalesArray = Object.values(itemSalesMap);
   const topSellers = [...allSalesArray].filter(i => i.qty > 0).sort((a, b) => b.qty - a.qty).slice(0, 5);
@@ -78,7 +130,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             Welcome back, {safeSession.name.split(" ")[0]}
           </h1>
           <p className="text-[15px] font-medium text-gray-500 mt-1">
-            Here's what's happening at your stores on this selected date.
+            Here&apos;s what&apos;s happening at your stores on this selected date.
           </p>
         </div>
         <div className="flex items-center gap-3">

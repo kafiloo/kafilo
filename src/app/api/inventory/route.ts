@@ -7,14 +7,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { requireTenantId } from "@/lib/tenant-repository";
 
 export const dynamic = 'force-dynamic';
 
 // ─── Helper: Generate SKU ─────────────────────────────────────
-async function generateInventorySku(): Promise<string> {
+async function generateInventorySku(tenantId: string): Promise<string> {
   const prefix = "INV";
   const lastItem = await prisma.inventoryItem.findFirst({
-    where: { sku: { startsWith: prefix } },
+    where: { sku: { startsWith: prefix }, tenantId },
     orderBy: { sku: "desc" },
     select: { sku: true },
   });
@@ -33,11 +34,43 @@ async function generateInventorySku(): Promise<string> {
 
 // ─── GET: List inventory dengan dukungan pencarian ────────────
 export async function GET(req: NextRequest) {
+  const session = await getSession();
+  const { searchParams } = new URL(req.url);
+  let tenantId: string | null = null;
+
+  if (session?.tenantId) {
+    tenantId = session.tenantId;
+  } else {
+    const slug =
+      searchParams.get("tenant") ||
+      searchParams.get("slug") ||
+      process.env.DEFAULT_TENANT_SLUG ||
+      "kafiloo";
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug },
+        select: { id: true },
+      });
+      if (tenant) tenantId = tenant.id;
+    } catch {
+      // tenant lookup gagal, tenantId tetap null
+    }
+  }
+
+  if (!tenantId) {
+    // Dummy data untuk development / preview tanpa tenant
+    const dummyItems = [
+      { id: "inv-dummy-1", name: "Biji Kopi Arabica", sku: "INV-0001", category: "Bahan Baku", unit: "KILOGRAM", currentStock: 15, minThreshold: 3 },
+      { id: "inv-dummy-2", name: "Susu UHT Full Cream", sku: "INV-0002", category: "Susu", unit: "LITER", currentStock: 20, minThreshold: 5 },
+      { id: "inv-dummy-3", name: "Gula Pasir", sku: "INV-0003", category: "Bahan Baku", unit: "KILOGRAM", currentStock: 10, minThreshold: 2 },
+    ];
+    return NextResponse.json({ items: dummyItems });
+  }
+
   try {
-    const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
 
-    const where: any = {};
+    const where: any = { tenantId };
     if (search.trim()) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
@@ -63,6 +96,12 @@ export async function POST(req: NextRequest) {
   if (!session || (session.role !== "SUPER_ADMIN" && session.role !== "MANAGER")) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const body = await req.json();
@@ -72,7 +111,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Nama barang wajib diisi" }, { status: 400 });
     }
 
-    const sku = await generateInventorySku();
+    const sku = await generateInventorySku(tenantId);
 
     const item = await prisma.inventoryItem.create({
       data: {
@@ -82,6 +121,7 @@ export async function POST(req: NextRequest) {
         unit: unit || "PIECE",
         currentStock: currentStock ?? 0,
         minThreshold: minThreshold ?? 0,
+        tenantId,
       },
     });
 
@@ -98,6 +138,12 @@ export async function PUT(req: NextRequest) {
   if (!session || (session.role !== "SUPER_ADMIN" && session.role !== "MANAGER")) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
@@ -106,8 +152,8 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    const item = await prisma.inventoryItem.update({
-      where: { id },
+    const updated = await prisma.inventoryItem.updateMany({
+      where: { id, tenantId },
       data: {
         ...(body.name !== undefined && { name: body.name }),
         ...(body.category !== undefined && { category: body.category }),
@@ -116,6 +162,10 @@ export async function PUT(req: NextRequest) {
         ...(body.minThreshold !== undefined && { minThreshold: Number(body.minThreshold) }),
       },
     });
+    if (updated.count !== 1) {
+      return NextResponse.json({ message: "Barang tidak ditemukan" }, { status: 404 });
+    }
+    const item = await prisma.inventoryItem.findFirst({ where: { id, tenantId } });
 
     return NextResponse.json({ item });
   } catch (error) {
@@ -130,6 +180,12 @@ export async function PATCH(req: NextRequest) {
   if (!session || (session.role !== "SUPER_ADMIN" && session.role !== "MANAGER")) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
@@ -143,13 +199,13 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ message: "Jumlah barang masuk harus lebih dari 0" }, { status: 400 });
     }
 
-    const existing = await prisma.inventoryItem.findUnique({ where: { id } });
+    const existing = await prisma.inventoryItem.findFirst({ where: { id, tenantId } });
     if (!existing) {
       return NextResponse.json({ message: "Barang tidak ditemukan" }, { status: 404 });
     }
 
     const item = await prisma.inventoryItem.update({
-      where: { id },
+      where: { id, tenantId },
       data: {
         currentStock: existing.currentStock + Number(quantity),
       },
@@ -168,6 +224,12 @@ export async function DELETE(req: NextRequest) {
   if (!session || (session.role !== "SUPER_ADMIN" && session.role !== "MANAGER")) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  let tenantId: string;
+  try {
+    tenantId = requireTenantId(session.tenantId);
+  } catch {
+    return NextResponse.json({ message: "Tenant context required" }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(req.url);
@@ -176,7 +238,7 @@ export async function DELETE(req: NextRequest) {
 
     // Cek apakah item masih terikat dengan resep menu aktif
     const recipeCount = await prisma.recipeItem.count({
-      where: { inventoryId: id },
+      where: { inventoryId: id, tenantId },
     });
 
     if (recipeCount > 0) {
@@ -186,7 +248,10 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await prisma.inventoryItem.delete({ where: { id } });
+    const deleted = await prisma.inventoryItem.deleteMany({ where: { id, tenantId } });
+    if (deleted.count !== 1) {
+      return NextResponse.json({ message: "Barang tidak ditemukan" }, { status: 404 });
+    }
     return NextResponse.json({ message: "Item berhasil dihapus" });
   } catch (error) {
     console.error("[DELETE /api/inventory]", error);
