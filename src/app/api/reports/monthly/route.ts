@@ -12,6 +12,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   const { searchParams } = new URL(req.url);
   let tenantId: string | null = null;
 

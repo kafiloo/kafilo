@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
     // 🔥 AMBIL SETTING DARI SUPERADMIN (DATABASE) 🔥
     const storeSetting = await prisma.storeSetting.findFirst({
-      where: { id: "kofilo-store-1", tenantId: customer.tenantId },
+      where: { tenantId: customer.tenantId },
     });
 
     let subTotalAmount = 0; 
@@ -117,10 +117,8 @@ export async function POST(req: NextRequest) {
       const realId = rawId.split('-')[0];
       const isRewardItem = item.isReward === true || rawId.includes('-reward') || (item.price === 0 && item.name.includes('Reward'));
       
-      const dbPrice = productPriceMap.get(realId) ?? 0;
-      
-      // Mengambil harga dari frontend (yang wajar)
-      const basePrice = isRewardItem ? 0 : (item.price >= dbPrice ? item.price : dbPrice);
+      // Selalu pakai harga dari DB, bukan dari frontend.
+      const basePrice = isRewardItem ? 0 : (productPriceMap.get(realId) ?? 0);
       const subTotal = basePrice * item.quantity;
       
       subTotalAmount += subTotal;

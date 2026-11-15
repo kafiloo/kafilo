@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     const order = await prisma.$transaction(async (tx) => {
       // Ambil konfigurasi toko (Tax & Service)
       const storeSetting = await tx.storeSetting.findFirst({
-        where: { id: "kofilo-store-1", tenantId },
+        where: { tenantId },
       });
 
       // 🔥 HITUNG TAX & SERVICE DINAMIS 🔥

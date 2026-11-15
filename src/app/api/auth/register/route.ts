@@ -91,7 +91,8 @@ export async function POST(request: Request) {
       return errorResponse(
         503,
         "verification_delivery_failed",
-        "Email verifikasi gagal dikirim.",
+        "Email verifikasi gagal dikirim. Gunakan tautan di bawah untuk mencoba lagi.",
+        { email: input.email, canResend: "true" },
       );
     }
 
