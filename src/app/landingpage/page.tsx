@@ -58,12 +58,52 @@ const Reveal = ({
   );
 };
 
+interface MerchantSession {
+  businessName: string;
+  slug: string;
+  email: string;
+}
+
 export default function KofiloLandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   
   // State Profil Toko
   const [storeInfo, setStoreInfo] = useState({ name: "Kafiloo", logo: "" });
+
+  // State Akun Client yang Sedang Login
+  const [currentUser, setCurrentUser] = useState<MerchantSession | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Cek sesi login dari localStorage saat landing page dimuat
+  useEffect(() => {
+    try {
+      const savedSession = localStorage.getItem("kafiloo_session");
+      if (savedSession) {
+        setCurrentUser(JSON.parse(savedSession));
+      }
+    } catch (error) {
+      console.error("Gagal membaca sesi:", error);
+    }
+  }, []);
+
+  // Tutup dropdown akun jika klik di luar
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("kafiloo_session");
+    setCurrentUser(null);
+    setUserMenuOpen(false);
+  };
 
   // Fetch data nama dan logo
   useEffect(() => {
@@ -121,7 +161,7 @@ export default function KofiloLandingPage() {
       <div className="fixed top-0 w-full z-50 p-4 transition-all duration-500 pointer-events-none">
         <nav className={`max-w-7xl mx-auto pointer-events-auto transition-all duration-500 rounded-full px-6 py-3 flex items-center justify-between ${scrolled ? "bg-[#FCFBF7]/90 backdrop-blur-md shadow-sm" : "bg-transparent py-4"}`}>
           
-          {/* KIRI (Logo) - Diberi flex-1 agar porsinya sama */}
+          {/* KIRI (Logo) */}
           <div className="flex-1 flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             {storeInfo.logo ? (
               <img src={storeInfo.logo} alt="Logo" className="w-8 h-8 rounded-full object-cover group-hover:scale-105 transition-all duration-300" />
@@ -133,7 +173,7 @@ export default function KofiloLandingPage() {
             <span className="font-bold text-[18px] tracking-tight">{storeInfo.name}</span>
           </div>
           
-          {/* TENGAH (Menu) - Diberi flex-1 dan justify-center agar presisi di tengah */}
+          {/* TENGAH (Menu) */}
           <div className="hidden md:flex flex-1 items-center justify-center gap-8">
             {['Fitur', 'Showcase', 'Review', 'FAQ'].map((item) => (
               <a key={item} href={`#${item.toLowerCase().replace(' ', '-')}`} onClick={(e) => scrollToSection(e, item.toLowerCase().replace(' ', '-'))} 
@@ -143,15 +183,69 @@ export default function KofiloLandingPage() {
             ))}
           </div>
 
-          {/* KANAN (Button Daftar) - Diberi flex-1 dan justify-end agar tetap menempel di kanan */}
+          {/* KANAN (Dinamis: Belum Login vs Sudah Login) */}
           <div className="flex-1 flex items-center justify-end gap-3">
-             <a 
-               href="#harga"
-               onClick={(e) => scrollToSection(e, 'harga')}
-               className="bg-[#18181b] hover:bg-black text-white px-5 py-2.5 rounded-full text-[13px] font-bold transition-all shadow-sm cursor-pointer"
-             >
-                Daftar Sekarang
-             </a>
+            {currentUser ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2.5 bg-white hover:bg-gray-50 border border-gray-200 pl-2 pr-4 py-1.5 rounded-full shadow-sm transition-all cursor-pointer"
+                >
+                  <div className="w-7 h-7 rounded-full bg-[#18181b] text-white flex items-center justify-center text-[11px] font-bold">
+                    {currentUser.businessName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-[12.5px] font-bold text-[#1a1f36] leading-none max-w-[130px] truncate">
+                      {currentUser.businessName}
+                    </p>
+                  </div>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Info Akun */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2.5 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="pb-3 mb-3 border-b border-gray-100">
+                      <p className="text-[10px] font-bold text-[#E58B55] uppercase tracking-widest mb-1">Workspace Aktif</p>
+                      <p className="text-[14px] font-bold text-[#1a1f36] truncate">{currentUser.businessName}</p>
+                      <p className="text-[12px] text-gray-400 truncate mt-0.5">{currentUser.email}</p>
+                      <p className="text-[11px] text-gray-500 bg-[#FDFBF7] border border-gray-100 rounded-lg px-2.5 py-1.5 mt-2 truncate">
+                        app.kafiloo.com/<strong>{currentUser.slug}</strong>
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full py-2.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-[12.5px] font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Keluar Akun
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/masuk"
+                  className="text-[13px] font-bold text-[#1a1f36] hover:text-gray-600 px-3 py-2 transition-colors"
+                >
+                  Masuk
+                </Link>
+                <Link
+                  href="/daftar"
+                  className="bg-[#18181b] hover:bg-black text-white px-5 py-2.5 rounded-full text-[13px] font-bold transition-all shadow-sm"
+                >
+                  Daftar Sekarang
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </div>
@@ -225,7 +319,7 @@ export default function KofiloLandingPage() {
                       {/* Menu List */}
                       <div className="flex flex-col gap-1.5">
                         <div className="h-11 w-full bg-white border border-[#1a1f36] shadow-[0_2px_10px_rgba(0,0,0,0.04)] rounded-xl flex items-center px-4 gap-3 cursor-pointer">
-                          <svg className="w-4 h-4 text-[#1a1f36]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                          <svg className="w-4 h-4 text-[#1a1f36]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                           <span className="font-bold text-[13px] text-[#1a1f36]">Dashboard</span>
                         </div>
                         
@@ -465,7 +559,7 @@ export default function KofiloLandingPage() {
         </div>
       </section>
 
-      {/* ── IMPACT SECTION (BARU SESUAI GAMBAR) ── */}
+      {/* ── IMPACT SECTION ── */}
       <section id="impact" className="py-32 bg-[#FEFAF1] relative z-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -517,7 +611,6 @@ export default function KofiloLandingPage() {
           
           {/* Kolom Kiri: Teks & Ikon */}
           <Reveal className="w-full lg:w-1/2">
-            {/* Label Oren Tambahan */}
             <div className="flex items-center gap-4 mb-6">
               <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
               <span className="text-[11px] font-bold text-[#E58B55] uppercase tracking-[0.25em]">KOMPATIBILITAS</span>
@@ -603,7 +696,7 @@ export default function KofiloLandingPage() {
         </div>
       </section>
 
-{/* ── TESTIMONIAL / REVIEW (BARU) ── */}
+      {/* ── TESTIMONIAL / REVIEW ── */}
       <section id="review" className="py-32 relative bg-[#FEFAF1] text-[#1a1f36] overflow-hidden scroll-mt-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
           <Reveal>
@@ -630,13 +723,10 @@ export default function KofiloLandingPage() {
 
         {/* Carousel Container */}
         <div className="relative max-w-[1400px] mx-auto group">
-          {/* Gradient Edges untuk efek fade di ujung kiri & kanan */}
           <div className="absolute top-0 left-0 w-16 md:w-32 h-full bg-gradient-to-r from-[#FEFAF1] to-transparent pointer-events-none z-10"></div>
           <div className="absolute top-0 right-0 w-16 md:w-32 h-full bg-gradient-to-l from-[#FEFAF1] to-transparent pointer-events-none z-10"></div>
           
           <Reveal delay={200} type="slide" direction="up" className="w-full">
-            {/* Pembungkus utama untuk efek Infinite Marquee */}
-            {/* group-hover akan menghentikan animasi saat mouse masuk */}
             <div className="flex w-full overflow-hidden py-4 group-hover:[&>div]:[animation-play-state:paused]">
               
               {/* Set 1 */}
@@ -671,7 +761,7 @@ export default function KofiloLandingPage() {
                 ))}
               </div>
 
-              {/* Set 2 (Duplikat untuk ilusi scrolling tanpa akhir) */}
+              {/* Set 2 */}
               <div className="animate-marquee flex gap-6 shrink-0 pl-6">
                 {[
                   { name: "Rizky K.", role: "Owner, Kopi Sanggar", initial: "RK", quote: "Sangat premium, mudah dimengerti dari pertama lihat." },
@@ -708,7 +798,7 @@ export default function KofiloLandingPage() {
         </div>
       </section>
 
-{/* ── PRICING SECTION ── */}
+      {/* ── PRICING SECTION ── */}
       <section id="harga" className="py-32 max-w-7xl mx-auto px-6 lg:px-8 scroll-mt-20 relative">
         <Reveal>
           <div className="text-center mb-20 max-w-3xl mx-auto">
@@ -888,7 +978,7 @@ export default function KofiloLandingPage() {
       <section id="faq" className="py-32 bg-[#FEFAF1] scroll-mt-10 relative z-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
           
-          {/* Kolom Kiri: Judul & Keterangan */}
+          {/* Kolom Kiri */}
           <Reveal className="w-full lg:w-5/12 lg:sticky lg:top-32">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-5 h-[1.5px] bg-[#E58B55]"></div>
@@ -902,7 +992,7 @@ export default function KofiloLandingPage() {
             </p>
           </Reveal>
 
-          {/* Kolom Kanan: Accordion Container */}
+          {/* Kolom Kanan */}
           <Reveal delay={200} type="slide" direction="up" className="w-full lg:w-7/12">
             <div className="bg-white rounded-[32px] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-gray-100 overflow-hidden flex flex-col">
               {faqs.map((faq, index) => (
@@ -915,12 +1005,10 @@ export default function KofiloLandingPage() {
                     
                     <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${openFaq === index ? 'bg-[#18181b] text-white' : 'bg-transparent text-gray-400 group-hover:text-[#1a1f36]'}`}>
                       {openFaq === index ? (
-                        /* Ikon Silang (X) saat terbuka */
                         <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       ) : (
-                        /* Ikon Tambah (+) saat tertutup */
                         <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
@@ -944,7 +1032,6 @@ export default function KofiloLandingPage() {
         <Reveal type="scale" className="w-full">
           <div className="bg-[#120d09] rounded-[40px] py-24 px-6 md:px-16 text-center relative overflow-hidden shadow-2xl border border-[#3b2716]/40">
             
-            {/* Ambient Glows (Efek Nyala) */}
             <div className="absolute -bottom-40 -left-20 md:-left-40 w-[600px] h-[600px] bg-[#8B5024]/40 blur-[130px] rounded-full pointer-events-none animate-[pulse_5s_ease-in-out_infinite] delay-1000"></div>
             <div className="absolute -top-40 -right-20 md:-right-40 w-[600px] h-[600px] bg-[#8B5024]/40 blur-[130px] rounded-full pointer-events-none animate-pulse"></div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#E58B55]/15 blur-[120px] rounded-full pointer-events-none animate-[pulse_4s_ease-in-out_infinite]"></div>
@@ -972,48 +1059,45 @@ export default function KofiloLandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-[#18181b] text-white pt-20 pb-10 relative z-10 rounded-t-[40px] md:rounded-t-[60px]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
+      <footer className="bg-[#FDFBF7] py-6 md:py-8 border-t border-gray-200">
+        <div className="w-full px-4 md:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          
+          {/* Kiri: Logo, Brand, dan Copyright */}
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-2 md:mr-2">
               {storeInfo.logo ? (
-                <img src={storeInfo.logo} alt="Logo" className="w-10 h-10 rounded-full object-cover bg-white" />
+                <img src={storeInfo.logo} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white text-xl font-bold border border-gray-700">{storeInitial}</div>
+                <div className="w-8 h-8 rounded-full bg-[#18181b] flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
+                </div>
               )}
-              <span className="font-bold text-[24px] tracking-tight">{storeInfo.name}.</span>
+              <span className="font-bold text-[16px] text-gray-900 tracking-tight">
+                {storeInfo.name}
+              </span>
             </div>
-            <p className="text-gray-400 text-[15px] max-w-sm leading-relaxed">Platform kasir & operasional premium untuk kedai kopi dan restoran modern. Cepat, tenang, dan dapat diandalkan.</p>
+            
+            <p className="text-[14px] text-gray-500 font-medium">
+              © {new Date().getFullYear()} {storeInfo.name}. All rights reserved.
+            </p>
           </div>
-          <div>
-            <h4 className="font-bold text-[16px] mb-6 text-white">Produk</h4>
-            <ul className="space-y-4 text-gray-400 text-[14px] font-medium">
-              <li><a href="#fitur" className="hover:text-white transition-colors">PWA Ordering App</a></li>
-              <li><a href="#fitur" className="hover:text-white transition-colors">Loyalty System</a></li>
-              <li><a href="#fitur" className="hover:text-white transition-colors">Cloud Dashboard</a></li>
-              <li><a href="#harga" className="hover:text-white transition-colors">Harga & Paket</a></li>
-            </ul>
+
+          {/* Kanan: Navigasi Links */}
+          <div className="flex flex-wrap justify-center gap-5 md:gap-8">
+            <a href="/landingpage/kebijakan-privasi" className="text-[14px] text-gray-500 hover:text-gray-900 font-medium transition-colors">
+              Kebijakan Privasi
+            </a>
+            <a href="/landingpage/syarat-ketentuan" className="text-[14px] text-gray-500 hover:text-gray-900 font-medium transition-colors">
+              Syarat Layanan
+            </a>
+            <a href="#kontak" className="text-[14px] text-gray-500 hover:text-gray-900 font-medium transition-colors">
+              Kontak
+            </a>
+            <a href="#status" className="text-[14px] text-gray-500 hover:text-gray-900 font-medium transition-colors">
+              Status
+            </a>
           </div>
-          <div>
-            <h4 className="font-bold text-[16px] mb-6 text-white">Bantuan</h4>
-            <ul className="space-y-4 text-gray-400 text-[14px] font-medium">
-              <li><a href="#faq" className="hover:text-white transition-colors">Pusat Bantuan (FAQ)</a></li>
-              <li>
-                <a href="https://wa.me/6285799854015?text=Halo%20Tim%20Sales%20Kofilo,%20saya%20ingin%20bertanya..." target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-                  Hubungi Sales
-                </a>
-              </li>
-              <li><a href="/landingpage/syarat-ketentuan" className="hover:text-white transition-colors">Syarat & Ketentuan</a></li>
-              <li><a href="/landingpage/kebijakan-privasi" className="hover:text-white transition-colors">Kebijakan Privasi</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[13px] text-gray-500 font-medium">© {new Date().getFullYear()} {storeInfo.name}. Seluruh Hak Cipta Dilindungi.</p>
-          <div className="flex gap-4">
-            <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-all">IG</a>
-            <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-all">X</a>
-          </div>
+
         </div>
       </footer>
 

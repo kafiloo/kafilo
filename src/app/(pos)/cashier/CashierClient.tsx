@@ -942,131 +942,198 @@ export default function CashierClient({ cashierName }: { cashierName: string }) 
       {/* ==========================================
           MODAL 2: CHECKOUT & PAYMENT
           ========================================== */}
-      {showCheckoutModal && (
-        <div className="fixed inset-0 z-[70] bg-[#1a1f36]/60 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
-          <div className="bg-white rounded-[32px] w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-in fade-in zoom-in-[0.96] duration-300 ease-out max-h-[90vh]">
-            
-            {/* KIRI: METODE PEMBAYARAN */}
-            <div className="flex-1 p-10 flex flex-col overflow-y-auto">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-black text-[#1a1f36] tracking-tight">Payment</h2>
-                <button onClick={() => setShowCheckoutModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors active:scale-90">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      {showCheckoutModal && (() => {
+        const numericCash = cashAmount === 'EXACT' ? total : Number(cashAmount || 0);
+        const isCashInsufficient = paymentMethod === 'CASH' && storeInfo.acceptCash && numericCash < total;
+        const changeAmount = paymentMethod === 'CASH' && numericCash > total ? numericCash - total : 0;
+        const isConfirmDisabled = (!storeInfo.acceptCash && !storeInfo.acceptQris) || isCashInsufficient;
+
+        return (
+          <div className="fixed inset-0 z-[70] bg-[#1a1f36]/60 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+            <div className="bg-white rounded-[32px] w-full max-w-4xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-in fade-in zoom-in-[0.96] duration-300 ease-out max-h-[90vh]">
+              
+              {/* KIRI: METODE PEMBAYARAN */}
+              <div className="flex-1 p-10 flex flex-col overflow-y-auto">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-3xl font-black text-[#1a1f36] tracking-tight">Payment</h2>
+                  <button onClick={() => setShowCheckoutModal(false)} className="p-3 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 transition-colors active:scale-90">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+
+                {/* 🔥 PROTEKSI: JIKA SEMUA METODE PEMBAYARAN DIMATIKAN ADMIN 🔥 */}
+                {!storeInfo.acceptCash && !storeInfo.acceptQris ? (
+                  <div className="mb-auto flex flex-col items-center justify-center p-10 border-2 border-dashed border-red-200 rounded-3xl bg-red-50/50 text-red-500 animate-in fade-in duration-300">
+                    <span className="text-4xl mb-3">⚠️</span>
+                    <h3 className="font-extrabold text-[#1a1f36] text-lg mb-1 text-center">Metode Pembayaran Tidak Tersedia</h3>
+                    <p className="text-sm font-medium text-red-400 text-center">Semua metode pembayaran sedang dinonaktifkan.<br/>Harap hubungi Admin.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-4 mb-8">
+                      {/* 🔥 SEMBUNYIKAN JIKA DI-DISABLE DI ADMIN 🔥 */}
+                      {storeInfo.acceptCash && (
+                        <button 
+                          type="button"
+                          onClick={() => setPaymentMethod('CASH')}
+                          className={`flex-1 py-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 font-extrabold transition-all ${paymentMethod === 'CASH' ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5 ring-4 ring-[#6C4E31]/10' : 'border-gray-100 text-gray-400 hover:border-gray-200 hover:bg-gray-50'}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V4.22a.75.75 0 00-.75-.75h-13.5a.75.75 0 00-.75.75v14.53zM15.75 18.75v-1.5a.75.75 0 00-1.5 0v1.5m-3-1.5v1.5m-3-1.5v1.5m10.5-12.75h-10.5M10.5 9h-3m3 3h-3m3 3h-3m3 0v1.5" /></svg>
+                          CASH
+                        </button>
+                      )}
+                      {storeInfo.acceptQris && (
+                        <button 
+                          type="button"
+                          onClick={() => setPaymentMethod('QRIS')}
+                          className={`flex-1 py-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 font-extrabold transition-all ${paymentMethod === 'QRIS' ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5 ring-4 ring-[#6C4E31]/10' : 'border-gray-100 text-gray-400 hover:border-gray-200 hover:bg-gray-50'}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 16.5h.008v.008h-.008v-.008zM16.5 19.5h.008v.008h-.008v-.008zM19.5 16.5h.008v.008h-.008v-.008zM19.5 19.5h.008v.008h-.008v-.008zM16.5 13.5h.008v.008h-.008v-.008zM13.5 16.5h.008v.008h-.008v-.008zM13.5 19.5h.008v.008h-.008v-.008zM19.5 13.5h.008v.008h-.008v-.008z" /></svg>
+                          QRIS / E-Wallet
+                        </button>
+                      )}
+                    </div>
+
+                    {paymentMethod === 'CASH' && storeInfo.acceptCash && (
+                      <div className="mb-auto animate-in fade-in duration-300">
+                        <h3 className="font-bold text-[13px] text-gray-400 uppercase tracking-wider mb-4">Quick Cash</h3>
+                        <div className="grid grid-cols-2 gap-3 mb-5">
+                          <button 
+                            type="button"
+                            onClick={() => setCashAmount('EXACT')}
+                            className={`py-4 rounded-2xl border-2 text-[14px] font-bold transition-all ${cashAmount === 'EXACT' ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5' : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50'}`}
+                          >
+                            Exact Amount
+                          </button>
+                          {[50000, 100000, 150000, 200000].map((amount) => {
+                            const isDisabled = amount < total;
+                            return (
+                              <button 
+                                key={amount}
+                                type="button"
+                                disabled={isDisabled}
+                                onClick={() => !isDisabled && setCashAmount(amount)}
+                                className={`py-4 rounded-2xl border-2 text-[14px] font-bold transition-all ${
+                                  isDisabled
+                                    ? 'border-gray-100 bg-gray-50/70 text-gray-300 cursor-not-allowed opacity-60'
+                                    : cashAmount === amount
+                                      ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5'
+                                      : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50'
+                                }`}
+                              >
+                                Rp {amount.toLocaleString('id-ID')}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* INPUT NOMINAL TUNAI CUSTOM */}
+                        <div className="space-y-2">
+                          <label className="block font-bold text-[12px] text-gray-400 uppercase tracking-wider">
+                            Nominal Tunai Lainnya
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] font-extrabold text-gray-400">
+                              Rp
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="Masukkan nominal tunai..."
+                              value={typeof cashAmount === 'number' && cashAmount > 0 ? cashAmount.toLocaleString('id-ID') : ''}
+                              onChange={(e) => {
+                                const rawDigits = e.target.value.replace(/\D/g, '');
+                                setCashAmount(rawDigits ? Number(rawDigits) : 0);
+                              }}
+                              className={`w-full pl-12 pr-4 py-4 rounded-2xl border-2 text-[15px] font-extrabold text-[#1a1f36] placeholder:text-gray-300 placeholder:font-semibold outline-none transition-all ${
+                                typeof cashAmount === 'number' && cashAmount > 0
+                                  ? isCashInsufficient
+                                    ? 'border-red-300 bg-red-50/30 focus:border-red-400'
+                                    : 'border-[#6C4E31] bg-[#6C4E31]/5'
+                                  : 'border-gray-100 bg-white focus:border-[#6C4E31]'
+                              }`}
+                            />
+                          </div>
+
+                          {/* INFO KEMBALIAN / KURANG */}
+                          <div className="flex items-center justify-between px-1 pt-1 text-[13px] font-bold">
+                            {isCashInsufficient ? (
+                              <span className="text-red-500">
+                                Nominal kurang Rp {(total - numericCash).toLocaleString('id-ID')}
+                              </span>
+                            ) : (
+                              <>
+                                <span className="text-gray-400">Kembalian</span>
+                                <span className={changeAmount > 0 ? 'text-emerald-600' : 'text-gray-500'}>
+                                  Rp {changeAmount.toLocaleString('id-ID')}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {paymentMethod === 'QRIS' && storeInfo.acceptQris && (
+                      <div className="mb-auto flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50 animate-in fade-in duration-300">
+                        <div className="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-5">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-[#6C4E31]"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 16.5h.008v.008h-.008v-.008zM16.5 19.5h.008v.008h-.008v-.008zM19.5 16.5h.008v.008h-.008v-.008zM19.5 19.5h.008v.008h-.008v-.008zM16.5 13.5h.008v.008h-.008v-.008zM13.5 16.5h.008v.008h-.008v-.008zM13.5 19.5h.008v.008h-.008v-.008zM19.5 13.5h.008v.008h-.008v-.008z" /></svg>
+                        </div>
+                        <h3 className="font-extrabold text-[#1a1f36] text-lg mb-1">Awaiting Payment</h3>
+                        <p className="text-sm font-medium text-gray-500 text-center">Please scan the QR code displayed on<br/>the EDC machine to complete.</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <button 
+                  type="button"
+                  onClick={confirmPayment}
+                  disabled={isConfirmDisabled}
+                  className={`mt-8 w-full py-5 rounded-2xl font-black text-[16px] transition-all ${
+                    isConfirmDisabled
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
+                    : 'bg-[#6C4E31] text-white shadow-[0_8px_25px_-8px_rgba(108,78,49,0.5)] hover:bg-[#583f27] hover:-translate-y-0.5 active:scale-[0.98]'
+                  }`}
+                >
+                  Confirm Payment - Rp {total.toLocaleString('id-ID')}
                 </button>
               </div>
 
-              {/* 🔥 PROTEKSI: JIKA SEMUA METODE PEMBAYARAN DIMATIKAN ADMIN 🔥 */}
-              {!storeInfo.acceptCash && !storeInfo.acceptQris ? (
-                <div className="mb-auto flex flex-col items-center justify-center p-10 border-2 border-dashed border-red-200 rounded-3xl bg-red-50/50 text-red-500 animate-in fade-in duration-300">
-                  <span className="text-4xl mb-3">⚠️</span>
-                  <h3 className="font-extrabold text-[#1a1f36] text-lg mb-1 text-center">Metode Pembayaran Tidak Tersedia</h3>
-                  <p className="text-sm font-medium text-red-400 text-center">Semua metode pembayaran sedang dinonaktifkan.<br/>Harap hubungi Admin.</p>
-                </div>
-              ) : (
-                <>
-                  <div className="flex gap-4 mb-8">
-                    {/* 🔥 SEMBUNYIKAN JIKA DI-DISABLE DI ADMIN 🔥 */}
-                    {storeInfo.acceptCash && (
-                      <button 
-                        onClick={() => setPaymentMethod('CASH')}
-                        className={`flex-1 py-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 font-extrabold transition-all ${paymentMethod === 'CASH' ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5 ring-4 ring-[#6C4E31]/10' : 'border-gray-100 text-gray-400 hover:border-gray-200 hover:bg-gray-50'}`}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V4.22a.75.75 0 00-.75-.75h-13.5a.75.75 0 00-.75.75v14.53zM15.75 18.75v-1.5a.75.75 0 00-1.5 0v1.5m-3-1.5v1.5m-3-1.5v1.5m10.5-12.75h-10.5M10.5 9h-3m3 3h-3m3 3h-3m3 0v1.5" /></svg>
-                        CASH
-                      </button>
-                    )}
-                    {storeInfo.acceptQris && (
-                      <button 
-                        onClick={() => setPaymentMethod('QRIS')}
-                        className={`flex-1 py-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 font-extrabold transition-all ${paymentMethod === 'QRIS' ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5 ring-4 ring-[#6C4E31]/10' : 'border-gray-100 text-gray-400 hover:border-gray-200 hover:bg-gray-50'}`}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 16.5h.008v.008h-.008v-.008zM16.5 19.5h.008v.008h-.008v-.008zM19.5 16.5h.008v.008h-.008v-.008zM19.5 19.5h.008v.008h-.008v-.008zM16.5 13.5h.008v.008h-.008v-.008zM13.5 16.5h.008v.008h-.008v-.008zM13.5 19.5h.008v.008h-.008v-.008zM19.5 13.5h.008v.008h-.008v-.008z" /></svg>
-                        QRIS / E-Wallet
-                      </button>
-                    )}
-                  </div>
+              {/* KANAN: RECEIPT PREVIEW */}
+              <div className="w-[380px] bg-[#f4f5f7] border-l border-gray-200 p-10 flex justify-center items-start overflow-y-auto hidden md:flex">
+                <ReceiptTicket
+                  data={{
+                    storeName: storeInfo.name,
+                    date: new Date().toLocaleDateString('id-ID'),
+                    time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                    txId: transactionId || "TX00000000",
+                    cashierName: cashierName.split(' ')[0],
+                    subtotal: subtotal,
+                    tax: taxAmount,
+                    taxRate: storeInfo.taxRate,
+                    serviceCharge: serviceAmount,
+                    serviceRate: storeInfo.serviceCharge,
+                    total: total,
+                    paymentMethod: paymentMethod,
+                    wifiName: storeInfo.wifiName,
+                    wifiPassword: storeInfo.wifiPassword,
+                    footerMessage: storeInfo.receiptFooter,
+                    items: cart.map(item => ({
+                      id: item.id,
+                      name: item.name,
+                      quantity: item.quantity,
+                      price: item.price,
+                      subTotal: item.price * item.quantity
+                    }))
+                  }}
+                />
+              </div>
 
-                  {paymentMethod === 'CASH' && storeInfo.acceptCash && (
-                    <div className="mb-auto animate-in fade-in duration-300">
-                      <h3 className="font-bold text-[13px] text-gray-400 uppercase tracking-wider mb-4">Quick Cash</h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button 
-                          onClick={() => setCashAmount('EXACT')}
-                          className={`py-4 rounded-2xl border-2 text-[14px] font-bold transition-all ${cashAmount === 'EXACT' ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5' : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50'}`}
-                        >
-                          Exact Amount
-                        </button>
-                        {[50000, 100000, 150000, 200000].map((amount) => (
-                          <button 
-                            key={amount}
-                            onClick={() => setCashAmount(amount)}
-                            className={`py-4 rounded-2xl border-2 text-[14px] font-bold transition-all ${cashAmount === amount ? 'border-[#6C4E31] text-[#6C4E31] bg-[#6C4E31]/5' : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50'}`}
-                          >
-                            Rp {amount.toLocaleString('id-ID')}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentMethod === 'QRIS' && storeInfo.acceptQris && (
-                    <div className="mb-auto flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50 animate-in fade-in duration-300">
-                      <div className="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-[#6C4E31]"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 16.5h.008v.008h-.008v-.008zM16.5 19.5h.008v.008h-.008v-.008zM19.5 16.5h.008v.008h-.008v-.008zM19.5 19.5h.008v.008h-.008v-.008zM16.5 13.5h.008v.008h-.008v-.008zM13.5 16.5h.008v.008h-.008v-.008zM13.5 19.5h.008v.008h-.008v-.008zM19.5 13.5h.008v.008h-.008v-.008z" /></svg>
-                      </div>
-                      <h3 className="font-extrabold text-[#1a1f36] text-lg mb-1">Awaiting Payment</h3>
-                      <p className="text-sm font-medium text-gray-500 text-center">Please scan the QR code displayed on<br/>the EDC machine to complete.</p>
-                    </div>
-                  )}
-                </>
-              )}
-
-              <button 
-                onClick={confirmPayment}
-                disabled={!storeInfo.acceptCash && !storeInfo.acceptQris}
-                className={`mt-8 w-full py-5 rounded-2xl font-black text-[16px] transition-all ${
-                  (!storeInfo.acceptCash && !storeInfo.acceptQris) 
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
-                  : 'bg-[#6C4E31] text-white shadow-[0_8px_25px_-8px_rgba(108,78,49,0.5)] hover:bg-[#583f27] hover:-translate-y-0.5 active:scale-[0.98]'
-                }`}
-              >
-                Confirm Payment - Rp {total.toLocaleString('id-ID')}
-              </button>
             </div>
-
-            {/* KANAN: RECEIPT PREVIEW */}
-            <div className="w-[380px] bg-[#f4f5f7] border-l border-gray-200 p-10 flex justify-center items-start overflow-y-auto hidden md:flex">
-              <ReceiptTicket
-                data={{
-                  storeName: storeInfo.name,
-                  date: new Date().toLocaleDateString('id-ID'),
-                  time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-                  txId: transactionId || "TX00000000",
-                  cashierName: cashierName.split(' ')[0],
-                  subtotal: subtotal,
-                  tax: taxAmount,
-                  taxRate: storeInfo.taxRate,
-                  serviceCharge: serviceAmount,
-                  serviceRate: storeInfo.serviceCharge,
-                  total: total,
-                  paymentMethod: paymentMethod,
-                  wifiName: storeInfo.wifiName,
-                  wifiPassword: storeInfo.wifiPassword,
-                  footerMessage: storeInfo.receiptFooter,
-                  items: cart.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price,
-                    subTotal: item.price * item.quantity
-                  }))
-                }}
-              />
-            </div>
-
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ==========================================
           MODAL BARU: PRINT STRUK (POP-OUT SEBELUM SUCCESS)
