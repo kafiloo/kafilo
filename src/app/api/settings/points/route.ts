@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   try {
     let settings = await prisma.storeSetting.findFirst({ where: { tenantId } });
     if (!settings) {
-      settings = await prisma.storeSetting.create({ data: { id: "kofilo-store-1", tenantId } });
+      settings = await prisma.storeSetting.create({ data: { tenantId } });
     }
     return NextResponse.json({ settings });
   } catch (error) {
@@ -74,7 +74,7 @@ export async function PUT(req: NextRequest) {
     let settings = await prisma.storeSetting.findFirst({ where: { tenantId } });
     
     if (!settings) {
-      settings = await prisma.storeSetting.create({ data: { id: "kofilo-store-1", tenantId } });
+      settings = await prisma.storeSetting.create({ data: { tenantId } });
     }
 
     const updatedSettings = await prisma.storeSetting.update({

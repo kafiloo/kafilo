@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     // Ambil nominal dari server — jangan percaya amount dari client.
     let amount: number;
     let linkPwaOrderId: string | null = null;
-    let tenantId: string;
+    let tenantId: string | null = null;
     if (pwaOrderId) {
       const order = await prisma.pwaOrder.findUnique({
         where: { id: pwaOrderId },
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       if (!plan)
         return NextResponse.json({ message: "planId tidak dikenal." }, { status: 400 });
       amount = plan.price;
-      tenantId = requireTenantId(session?.tenantId);
+      tenantId = session?.tenantId ?? null;
     } else {
       return NextResponse.json(
         { message: "pwaOrderId atau planId wajib diisi (nominal diambil dari server)." },

@@ -12,7 +12,6 @@ import { requireTenantId } from "@/lib/tenant-repository";
 
 // ─── GET: Ambil semua akun ────────────────────────────────────
 export async function GET(req: NextRequest) {
-  // TODO: Add Auth check here — verifikasi session & role SUPER_ADMIN
   const session = await getSession();
   const { searchParams } = new URL(req.url);
   if (!session || session.role !== "SUPER_ADMIN") {
@@ -73,7 +72,6 @@ export async function GET(req: NextRequest) {
 
 // ─── POST: Tambah akun baru ───────────────────────────────────
 export async function POST(req: NextRequest) {
-  // TODO: Add Auth check here
   const session = await getSession();
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -125,7 +123,7 @@ export async function POST(req: NextRequest) {
         name,
         username,
         password: hashedPassword,
-        role: validRole as any, // Simpan role yang dipilih ke database
+        role: validRole,
         tenantId,
       },
       select: { id: true, name: true, username: true, role: true, createdAt: true },
@@ -140,7 +138,6 @@ export async function POST(req: NextRequest) {
 
 // ─── DELETE: Hapus akun berdasarkan ID ────────────────────────
 export async function DELETE(req: NextRequest) {
-  // TODO: Add Auth check here
   const session = await getSession();
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -172,7 +169,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await prisma.user.delete({ where: { id } });
+    await prisma.user.delete({ where: { id, tenantId } });
 
     // 🔥 PERUBAHAN 4: Ubah pesan menjadi lebih umum
     return NextResponse.json({ message: "Akun berhasil dihapus" });

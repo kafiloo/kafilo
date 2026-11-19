@@ -355,7 +355,7 @@ model RewardProduct {
 }
 
 model StoreSetting {
-  id          String   @id @default("kofilo-store-1")
+  id          String   @id @default(cuid())
   tenantId    String?
   storeName   String   @default("Craft Coffee")
   description String?  @db.Text

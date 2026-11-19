@@ -66,7 +66,7 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
     let settings = await prisma.storeSetting.findFirst({ where: { tenantId } });
-    if (!settings) settings = await prisma.storeSetting.create({ data: { id: "kofilo-store-1", tenantId } });
+    if (!settings) settings = await prisma.storeSetting.create({ data: { tenantId } });
 
     await prisma.storeSetting.update({
       where: { id: settings.id },

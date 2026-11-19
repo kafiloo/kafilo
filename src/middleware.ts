@@ -39,7 +39,8 @@ const PUBLIC_ROUTES = [
 // --- JWT Verify Helper ---
 
 function getSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET || "kofilo-pwa-jwt-secret-2026-randomsalt-change-in-production";
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error("JWT_SECRET is not set.");
   return new TextEncoder().encode(secret);
 }
 
